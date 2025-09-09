@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Janashakthi Financial Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .kpi-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .kpi-unit {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            opacity: 0.8;
+        }
+
+        .kpi-budget {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        .kpi-icon {
+            background: linear-gradient(135deg, var(--icon-color, #3b82f6), var(--icon-color-light, #60a5fa));
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item:hover {
+            transform: translateX(4px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 15px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6;">
+            <div style="text-align: center;">
+                <div style="width: 64px; height: 64px; border: 4px solid #3b82f6; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+                <h2 style="font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 8px;">Loading Janashakthi Dashboard</h2>
+                <p style="color: #6b7280;">Please wait while we initialize your financial dashboard...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        
+        console.log('Dashboard script starting...');
+        
+        // Enhanced interactive chart components with better visuals
+        function SimpleBarChart({ data, color, hideLegend }) {
+            const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (!data || data.length === 0 || !chartRef.current) return;
+                
+                // Destroy existing chart
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+                
+                const ctx = chartRef.current.getContext('2d');
+                
+                // Create gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, color || '#3B82F6');
+                gradient.addColorStop(1, (color || '#3B82F6') + '80');
+                
+                const budgetGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                budgetGradient.addColorStop(0, '#9CA3AF');
+                budgetGradient.addColorStop(1, '#9CA3AF60');
+                
+                chartInstance.current = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(item => item.name),
+                        datasets: [
+                            {
+                                label: 'Actual',
+                                data: data.map(item => item.actual || 0),
+                                backgroundColor: gradient,
+                                borderColor: color || '#3B82F6',
+                                borderWidth: 2,
+                                borderRadius: 8,
+                                borderSkipped: false,
+                                barThickness: 40,
+                                maxBarThickness: 50,
+                                shadowColor: 'rgba(0,0,0,0.1)',
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowOffsetY: 4,
+                            },
+                            {
+                                label: 'Budget',
+                                data: data.map(item => item.budget || 0),
+                                backgroundColor: budgetGradient,
+                                borderColor: '#6B7280',
+                                borderWidth: 2,
+                                borderRadius: 8,
+                                borderSkipped: false,
+                                barThickness: 40,
+                                maxBarThickness: 50,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                display: !hideLegend,
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 25,
+                                    font: {
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    color: '#374151'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: color || '#3B82F6',
+                                borderWidth: 2,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 13 },
+                                padding: 12,
+                                callbacks: {
+                                    afterLabel: function(context) {
+                                        if (context.datasetIndex === 0 && data[context.dataIndex].budget) {
+                                            const actual = data[context.dataIndex].actual || 0;
+                                            const budget = data[context.dataIndex].budget;
+                                            const variance = ((actual / budget - 1) * 100).toFixed(1);
+                                            return `Variance: ${variance}%`;
+                                        }
+                                        return '';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(156, 163, 175, 0.2)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    },
+                                    color: '#6B7280',
+                                    font: { size: 11 }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#6B7280',
+                                    font: { size: 11, weight: '500' }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+                
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [data, color]);
+            
+            if (!data || data.length === 0) {
+                return React.createElement('div', {
+                    className: 'flex items-center justify-center h-full text-gray-500'
+                }, 'No data available');
+            }
+            
+            return React.createElement('canvas', {
+                ref: chartRef,
+                style: { maxHeight: '350px' }
+            });
+        }
+
+        function SimplePieChart({ data }) {
+            const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (!data || data.length === 0 || !chartRef.current) return;
+                
+                // Destroy existing chart
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+                
+                const ctx = chartRef.current.getContext('2d');
+                
+                chartInstance.current = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.map(item => item.name),
+                        datasets: [{
+                            data: data.map(item => item.value || 0),
+                            backgroundColor: data.map(item => item.color || '#3B82F6'),
+                            borderColor: '#ffffff',
+                            borderWidth: 3,
+                            hoverBorderWidth: 4,
+                            hoverOffset: 15,
+                            spacing: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12,
+                                        weight: '500'
+                                    },
+                                    color: '#374151',
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        
+                                        return data.labels.map((label, index) => {
+                                            const value = data.datasets[0].data[index];
+                                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                            
+                                            return {
+                                                text: `${label}: ${percentage}%`,
+                                                fillStyle: data.datasets[0].backgroundColor[index],
+                                                strokeStyle: data.datasets[0].backgroundColor[index],
+                                                lineWidth: 0,
+                                                pointStyle: 'circle',
+                                                hidden: false,
+                                                index: index
+                                            };
+                                        });
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderWidth: 2,
+                                borderColor: '#3B82F6',
+                                cornerRadius: 12,
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 13 },
+                                padding: 12,
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                                        return `${context.label}: ${context.raw.toLocaleString()} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 1500,
+                            easing: 'easeInOutQuart'
+                        },
+                        interaction: {
+                            intersect: false
+                        }
+                    }
+                });
+                
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [data]);
+            
+            if (!data || data.length === 0) {
+                return React.createElement('div', {
+                    className: 'flex items-center justify-center h-full text-gray-500'
+                }, 'No data available');
+            }
+            
+            return React.createElement('canvas', {
+                ref: chartRef,
+                style: { maxHeight: '350px' }
+            });
+        }
+
+        function SimpleLineChart({ data, color }) {
+            const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (!data || data.length === 0 || !chartRef.current) return;
+                
+                // Destroy existing chart
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+                
+                const ctx = chartRef.current.getContext('2d');
+                
+                // Create gradient for area fill
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, (color || '#3B82F6') + '40');
+                gradient.addColorStop(1, (color || '#3B82F6') + '05');
+                
+                const datasets = [
+                    {
+                        label: 'Actual',
+                        data: data.map(item => item.actual || 0),
+                        borderColor: color || '#3B82F6',
+                        backgroundColor: gradient,
+                        borderWidth: 4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: color || '#3B82F6',
+                        pointBorderWidth: 3,
+                        pointRadius: 8,
+                        pointHoverRadius: 12,
+                        pointHoverBorderWidth: 4,
+                        tension: 0.4,
+                        fill: true,
+                        shadowColor: 'rgba(0,0,0,0.1)',
+                        shadowBlur: 15,
+                        shadowOffsetY: 8,
+                    }
+                ];
+                
+                // Add budget line if data exists
+                if (data.some(item => item.budget !== undefined)) {
+                    datasets.push({
+                        label: 'Budget',
+                        data: data.map(item => item.budget || 0),
+                        borderColor: '#9CA3AF',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        borderDash: [8, 4],
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#9CA3AF',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 9,
+                        pointHoverBorderWidth: 3,
+                        tension: 0.4,
+                        fill: false
+                    });
+                }
+                
+                chartInstance.current = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(item => item.month),
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 25,
+                                    font: {
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    color: '#374151'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: color || '#3B82F6',
+                                borderWidth: 2,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 13 },
+                                padding: 12,
+                                callbacks: {
+                                    afterLabel: function(context) {
+                                        if (context.datasetIndex === 0 && data[context.dataIndex].budget) {
+                                            const actual = data[context.dataIndex].actual || 0;
+                                            const budget = data[context.dataIndex].budget;
+                                            const variance = ((actual / budget - 1) * 100).toFixed(1);
+                                            return `Variance: ${variance}%`;
+                                        }
+                                        return '';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(156, 163, 175, 0.2)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    },
+                                    color: '#6B7280',
+                                    font: { size: 11 }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(156, 163, 175, 0.1)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                    color: '#6B7280',
+                                    font: { size: 11, weight: '500' }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutQuart'
+                        },
+                        elements: {
+                            point: {
+                                hoverBorderWidth: 4
+                            }
+                        }
+                    }
+                });
+                
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [data, color]);
+            
+            if (!data || data.length === 0) {
+                return React.createElement('div', {
+                    className: 'flex items-center justify-center h-full text-gray-500'
+                }, 'No data available');
+            }
+            
+            return React.createElement('canvas', {
+                ref: chartRef,
+                style: { maxHeight: '350px' }
+            });
+        }
+        
+         function MultiLineChart({ data, title }) {
+            const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (!data || data.length === 0 || !chartRef.current) return;
+                
+                // Destroy existing chart
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+                
+                const ctx = chartRef.current.getContext('2d');
+                
+                // Create gradients for each line
+                const tBillsGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                tBillsGradient.addColorStop(0, '#3B82F640');
+                tBillsGradient.addColorStop(1, '#3B82F605');
+                
+                const outrightGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                outrightGradient.addColorStop(0, '#10B98140');
+                outrightGradient.addColorStop(1, '#10B98105');
+                
+                const govSecGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                govSecGradient.addColorStop(0, '#F59E0B40');
+                govSecGradient.addColorStop(1, '#F59E0B05');
+                
+                const datasets = [
+                    {
+                        label: 'T-Bills',
+                        data: data.map(item => item.tBills || 0),
+                        borderColor: '#3B82F6',
+                        backgroundColor: tBillsGradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#3B82F6',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBorderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Outright Sale',
+                        data: data.map(item => item.outrightSale || 0),
+                        borderColor: '#10B981',
+                        backgroundColor: outrightGradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#10B981',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBorderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Gov Securities',
+                        data: data.map(item => item.govSecurities || 0),
+                        borderColor: '#F59E0B',
+                        backgroundColor: govSecGradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#F59E0B',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBorderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }
+                ];
+                
+                chartInstance.current = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(item => item.month),
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: {
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    color: '#374151'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: '#3B82F6',
+                                borderWidth: 2,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 13 },
+                                padding: 12,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw.toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(156, 163, 175, 0.2)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    },
+                                    color: '#6B7280',
+                                    font: { size: 11 }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(156, 163, 175, 0.1)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                    color: '#6B7280',
+                                    font: { size: 11, weight: '500' }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutQuart'
+                        },
+                        elements: {
+                            point: {
+                                hoverBorderWidth: 4
+                            }
+                        }
+                    }
+                });
+                
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [data, title]);
+            
+            if (!data || data.length === 0) {
+                return React.createElement('div', {
+                    className: 'flex items-center justify-center h-full text-gray-500'
+                }, 'No data available');
+            }
+            
+            return React.createElement('canvas', {
+                ref: chartRef,
+                style: { maxHeight: '350px' }
+            });
+        }
+        
+        function GroupedBarChart({ data, title }) {
+            const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
+            
+            React.useEffect(() => {
+                if (!data || data.length === 0 || !chartRef.current) return;
+                
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+                
+                const ctx = chartRef.current.getContext('2d');
+                
+                const junGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                junGradient.addColorStop(0, '#3B82F6');
+                junGradient.addColorStop(1, '#3B82F680');
+                
+                const julGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                julGradient.addColorStop(0, '#10B981');
+                julGradient.addColorStop(1, '#10B98180');
+                
+                const augGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                augGradient.addColorStop(0, '#F59E0B');
+                augGradient.addColorStop(1, '#F59E0B80');
+                
+                chartInstance.current = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(item => `${item.icon || '📊'} ${item.shortLabel || item.category}`),
+                        datasets: [
+                            {
+                                label: data[0]?.month1Label || 'Month 1',
+                                data: data.map(item => item.month1 || item.jun || 0),
+                                backgroundColor: junGradient,
+                                borderColor: '#3B82F6',
+                                borderWidth: 2,
+                                borderRadius: 6,
+                                borderSkipped: false,
+                                barThickness: 'flex',
+                                maxBarThickness: 30
+                            },
+                            {
+                                label: data[0]?.month2Label || 'Month 2',
+                                data: data.map(item => item.month2 || item.jul || 0),
+                                backgroundColor: julGradient,
+                                borderColor: '#10B981',
+                                borderWidth: 2,
+                                borderRadius: 6,
+                                borderSkipped: false,
+                                barThickness: 'flex',
+                                maxBarThickness: 30
+                            },
+                            {
+                                label: data[0]?.month3Label || 'Month 3',
+                                data: data.map(item => item.month3 || item.aug || 0),
+                                backgroundColor: augGradient,
+                                borderColor: '#F59E0B',
+                                borderWidth: 2,
+                                borderRadius: 6,
+                                borderSkipped: false,
+                                barThickness: 'flex',
+                                maxBarThickness: 30
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: { size: 12, weight: '600' },
+                                    color: '#374151'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: '#3B82F6',
+                                borderWidth: 2,
+                                cornerRadius: 12,
+                                titleFont: { size: 13, weight: 'bold' },
+                                bodyFont: { size: 12 },
+                                padding: 12,
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const formatted = Math.abs(value) >= 1000 ? 
+                                            (value/1000).toFixed(1) + 'K' : 
+                                            value.toLocaleString();
+                                        return `${context.dataset.label}: ${formatted}`;
+                                    },
+                                    title: function(context) {
+                                        return context[0].label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                min: -1000,
+                                max: 10000,
+                                grid: {
+                                    color: 'rgba(156, 163, 175, 0.2)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                     stepSize: 1000,
+                                    callback: function(value) {
+                                        return Math.abs(value) >= 1000 ? 
+                                            (value).toFixed(0) + 'Mn' : 
+                                            value.toLocaleString();
+                                    },
+                                    color: '#6B7280',
+                                    font: { size: 10 }
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    color: '#6B7280',
+                                    font: { size: 9, weight: '500' },
+                                    maxRotation: 25,
+                                    minRotation: 0
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+                
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [data, title]);
+            
+            if (!data || data.length === 0) {
+                return React.createElement('div', {
+                    className: 'flex items-center justify-center h-full text-gray-500'
+                }, 'No data available');
+            }
+            
+            return React.createElement('canvas', {
+                ref: chartRef,
+                style: { maxHeight: '400px' }
+            });
+        }
+
+        function Dashboard() {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [selectedEntity, setSelectedEntity] = useState('janashakthi-limited');
+            const [selectedMonth, setSelectedMonth] = useState('June');
+            const [selectedYear, setSelectedYear] = useState('2025');
+            const [showLogin, setShowLogin] = useState(false);
+            const [showUpload, setShowUpload] = useState(false);
+            const [password, setPassword] = useState('');
+            const [authToken, setAuthToken] = useState(null);
+            const [uploadFile, setUploadFile] = useState(null);
+            const [uploadLoading, setUploadLoading] = useState(false);
+            const [showAdminPanel, setShowAdminPanel] = useState(false);
+            const [uploadEntity, setUploadEntity] = useState('janashakthi-limited');
+            const [uploadMonth, setUploadMonth] = useState('June');
+            const [uploadYear, setUploadYear] = useState('2025');
+
+            const entities = [
+                { id: 'janashakthi-limited', name: 'Janashakthi Limited', short: 'JXG', color: '#EA580C' },
+                { id: 'janashakthi-insurance', name: 'Janashakthi Insurance PLC', short: 'JINS', color: '#A16207' },
+                { id: 'first-capital', name: 'First Capital Holdings PLC', short: 'FCH', color: '#1E3A8A' },
+                { id: 'janashakthi-finance', name: 'Janashakthi Finance PLC', short: 'JF', color: '#92400E' }
+            ];
+
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const years = ['2023', '2024', '2025', '2026', '2027'];
+
+            const janashakthiLimitedNoBudgetKPIs = [
+                'Debt to Equity Ratio',
+                'ROE Annualized', 
+                'Total Assets',
+                'Equity',
+                'Staff Count'
+            ];
+
+            useEffect(() => {
+                loadData();
+            }, []);
+
+            const loadData = async () => {
+                try {
+                    const response = await fetch('/api/dashboard-data');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    const result = await response.json();
+                    setData(result);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleAdminLogin = async () => {
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        setAuthToken(result.token);
+                        setShowLogin(false);
+                        setShowAdminPanel(true);
+                        setPassword('');
+                    } else {
+                        alert('❌ Wrong password. Try: admin123');
+                    }
+                } catch (error) {
+                    alert('❌ Login failed');
+                }
+            };
+
+            const handleAdminFileUpload = async () => {
+                if (!uploadFile || !authToken) return;
+
+                setUploadLoading(true);
+                try {
+                    const formData = new FormData();
+                    formData.append('dataFile', uploadFile);
+                    formData.append('entityId', uploadEntity);
+                    formData.append('month', uploadMonth);
+                    formData.append('year', uploadYear);
+
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert('✅ ' + result.message);
+                        setUploadFile(null);
+                        loadData();
+                    } else {
+                        const error = await response.json();
+                        alert('❌ Upload failed: ' + error.error);
+                    }
+                } catch (error) {
+                    alert('❌ Upload failed: ' + error.message);
+                } finally {
+                    setUploadLoading(false);
+                }
+            };
+
+            const downloadTemplate = (entityId) => {
+                const entity = entities.find(e => e.id === entityId);
+                const link = document.createElement('a');
+                link.href = `/api/template/${entityId}`;
+                link.download = `${entity.short}_Template_${new Date().toISOString().slice(0,10)}.xlsx`;
+                link.click();
+            };
+
+            const currentEntity = entities.find(e => e.id === selectedEntity);
+            const periodKey = `${selectedMonth}-${selectedYear}`;
+            const currentData = data && data[periodKey] && data[periodKey][selectedEntity];
+
+            const chartData = useMemo(() => {
+                if (!currentData || !currentData.kpis) return null;
+
+                // Financial Composition - Key financial KPIs
+                const financialData = currentData.kpis.filter(kpi => 
+                    kpi.name.toLowerCase().includes('pat') || 
+                    kpi.name.toLowerCase().includes('assets') || 
+                    kpi.name.toLowerCase().includes('equity') || 
+                    kpi.name.toLowerCase().includes('profit') ||
+                    kpi.name.toLowerCase().includes('liabilities') ||
+                    kpi.name.toLowerCase().includes('nav')
+                ).slice(0, 4).map((kpi, index) => ({
+                    name: kpi.name,
+                    value: kpi.actual || 0,
+                    color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'][index]
+                }));
+
+                // Entity-specific chart data from uploaded data
+                let entitySpecificData = {};
+
+                if (selectedEntity === 'janashakthi-limited') {
+                    // Use actual uploaded data if available, otherwise fallback to sample
+                    const shareComposition = currentData.shareComposition || [
+                        { name: 'Janashakthi Insurance PLC', value: 100, color: '#8B5CF6' },
+                        { name: 'First Capital Holdings PLC', value: 100, color: '#06B6D4' },
+                        { name: 'Janashakthi Finance PLC', value: 100, color: '#10B981' }
+                    ];
+
+                    const overheadsData = currentData.overheads || [
+                        { name: 'Staff Cost', actual: 100, budget: 80 },
+                        { name: 'Admin Cost', actual: 100, budget: 100 },
+                        { name: 'Marketing', actual: 80, budget: 100 },
+                        { name: 'Professional Charges', actual: 60, budget: 100 }
+                    ];
+
+                    const wacdData = currentData.wacdMovement || [
+                        { month: '24-Aug', actual: 35, budget: 20 },
+                        { month: '24-Sep', actual: 20, budget: 15 },
+                        { month: '24-Oct', actual: 20, budget: 15 }
+                    ];
+
+                    const maturityProfile = currentData.maturityProfile || [
+                        { name: '0-3 Months', value: 40 },
+                        { name: '3-6 Months', value: 60 },
+                        { name: '6-12 Months', value: 80 },
+                        { name: '1-2 Years', value: 55 },
+                        { name: '3-6 Years', value: 35 }
+                    ];
+
+                    entitySpecificData = { shareComposition, overheadsData, wacdData, maturityProfile };
+                }
+
+                if (selectedEntity === 'janashakthi-insurance') {
+                    entitySpecificData = {
+                        retailBusinessFYP: currentData.retailBusinessFYP || [],
+                        jsvFYP: currentData.jsvFYP || [],
+                        dtaFYP: currentData.dtaFYP || [],
+                        renewalPremium: currentData.renewalPremium || [],
+                        ulCreditRating: currentData.ulCreditRating || [],
+                        surplusActual: currentData.surplusActual || []
+                    };
+                }
+
+                if (selectedEntity === 'first-capital') {
+                    console.log('=== DEBUG: First Capital Data ===', currentData);
+                    console.log('=== All Available Fields ===', Object.keys(currentData || {}));
+                    const netIncomeData = currentData.netIncomeAgainstBudget || [
+                        { month: '25-Jun', actual: 100, budget: 80 },
+                        { month: '25-Jul', actual: 80, budget: 100 },
+                        { month: '25-Aug', actual: 100, budget: 100 }
+                    ];
+
+                    const tradingComposition = currentData.tradingComposition || [
+                        { name: 'Primary Dealing', value: 100, color: '#8B5CF6' },
+                        { name: 'Dealing Securities', value: 100, color: '#06B6D4' },
+                        { name: 'Corporate Finance', value: 80, color: '#10B981' },
+                        { name: 'Asset Management', value: 70, color: '#F59E0B' },
+                        { name: 'Stock Brokering', value: 60, color: '#EF4444' }
+                    ];
+
+                    const overheadsData = currentData.overheadsAgainstBudget || [
+                        { name: 'Staff Cost', actual: 100, budget: 80 },
+                        { name: 'Admin Cost', actual: 100, budget: 100 },
+                        { name: 'Marketing', actual: 80, budget: 100 },
+                        { name: 'Professional Charges', actual: 60, budget: 100 }
+                    ];
+
+                    const unitTrustAUM = currentData.unitTrustAUM || [
+                        { month: '25-Jun', actual: 73000, budget: 70000 },
+                        { month: '25-Jul', actual: 73000, budget: 70000 },
+                        { month: '25-Aug', actual: 73000, budget: 70000 }
+                    ];
+
+                    const wmAUM = currentData.wmAUM || [
+                        { month: '25-Jun', actual: 73000, budget: 70000 },
+                        { month: '25-Jul', actual: 73000, budget: 70000 },
+                        { month: '25-Aug', actual: 73000, budget: 70000 }
+                    ];
+
+                    const portfolioManagement = currentData.portfolioManagement || [
+                        { month: '25-Jun', actual: 36000 },
+                        { month: '25-Jul', actual: 38000 },
+                        { month: '25-Aug', actual: 40000 }
+                    ];
+
+                    const treasuriesData = currentData.treasuriesData || [
+                        { month: 'Jun-25', tBills: 26000, outrightSale: 50000, govSecurities: 80000 },
+                        { month: 'Jul-25', tBills: 30000, outrightSale: 60000, govSecurities: 85000 },
+                        { month: 'Aug-25', tBills: 40000, outrightSale: 7000, govSecurities: 80000 }
+                    ];
+
+                    const treasuriesChartData = [];
+                    if (treasuriesData && treasuriesData.length > 0) {
+                        treasuriesData.forEach(item => {
+                            treasuriesChartData.push({
+                                month: item.month,
+                                tBills: item.tBills || 0,
+                                outrightSale: item.outrightSale || 0,
+                                govSecurities: item.govSecurities || 0
+                            });
+                        });
+                    }
+
+                    const dealingSecuritiesData = currentData.dealingSecurities || [
+                        { 
+                            category: 'Investment in Corporate & Gov Debts', 
+                            shortLabel: 'Corp & Gov Debt Investment',
+                            icon: '🏛️',
+                            jun: 5000, jul: 4500, aug: 6000 
+                        },
+                        { 
+                            category: 'MTM Gain/Loss on Corporate & Gov. Debts', 
+                            shortLabel: 'Corp & Gov Debt MTM',
+                            icon: '📊',
+                            jun: -32, jul: -27, aug: 32 
+                        },
+                        { 
+                            category: 'Investment in Listed Equity Securities FVTPL', 
+                            shortLabel: 'Listed Equity FVTPL',
+                            icon: '📈',
+                            jun: 5000, jul: 5000, aug: 5000 
+                        },
+                        { 
+                            category: 'MTM Gain/Loss on Listed Equity Securities FVTPL', 
+                            shortLabel: 'Listed Equity FVTPL MTM',
+                            icon: '💹',
+                            jun: 3500, jul: 3500, aug: 3500 
+                        },
+                        { 
+                            category: 'Investment in Listed Equity Securities FVTOCI', 
+                            shortLabel: 'Listed Equity FVTOCI',
+                            icon: '📉',
+                            jun: 2500, jul: 2500, aug: 2500 
+                        },
+                        { 
+                            category: 'MTM Gain/Loss on Listed Equity Securities FVTOCI', 
+                            shortLabel: 'Listed Equity FVTOCI MTM',
+                            icon: '🎯',
+                            jun: 73, jul: 73, aug: 73 
+                        },
+                        { 
+                            category: 'Value of Debt Mandates executed for the Month', 
+                            shortLabel: 'Monthly Debt Mandates',
+                            icon: '📋',
+                            jun: 10, jul: 10, aug: 10 
+                        }
+                    ];
+
+                    entitySpecificData = { netIncomeData, tradingComposition, overheadsData, unitTrustAUM, wmAUM, portfolioManagement, treasuriesChartData, dealingSecuritiesData };
+                }
+
+                if (selectedEntity === 'janashakthi-finance') {
+                    const netInterestIncome = currentData.netInterestIncomeAgainstBudget || [
+                        { month: '25-Jun', actual: 100, budget: 80 },
+                        { month: '25-Jul', actual: 80, budget: 100 },
+                        { month: '25-Aug', actual: 100, budget: 100 }
+                    ];
+
+                    const loanComposition = currentData.loanComposition || [
+                        { name: 'Factoring', value: 100, color: '#8B5CF6' },
+                        { name: 'Gold Loans', value: 100, color: '#06B6D4' },
+                        { name: 'Leasing', value: 80, color: '#10B981' },
+                        { name: 'Loans', value: 70, color: '#F59E0B' },
+                        { name: 'Ijara', value: 60, color: '#EF4444' }
+                    ];
+
+                    const overheadsData = currentData.overheadsAgainstBudget || [
+                        { name: 'Staff Cost', actual: 100, budget: 80 },
+                        { name: 'Admin Cost', actual: 100, budget: 100 },
+                        { name: 'Marketing', actual: 80, budget: 100 },
+                        { name: 'Professional Charges', actual: 60, budget: 100 }
+                    ];
+
+                    entitySpecificData = { netInterestIncome, loanComposition, overheadsData };
+                }
+
+                return { financialData, entitySpecificData };
+            }, [currentData, selectedEntity]);
+
+            if (loading) {
+                return React.createElement('div', {
+                    className: 'min-h-screen bg-gray-100 flex items-center justify-center'
+                }, React.createElement('div', {
+                    className: 'text-center'
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        className: 'w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full spin mx-auto mb-4'
+                    }),
+                    React.createElement('h2', {
+                        key: 'title',
+                        className: 'text-xl font-bold text-gray-900 mb-2'
+                    }, 'Loading Dashboard'),
+                    React.createElement('p', {
+                        key: 'subtitle',
+                        className: 'text-gray-600'
+                    }, 'Fetching your financial data...')
+                ]));
+            }
+
+            if (error) {
+                return React.createElement('div', {
+                    className: 'min-h-screen bg-gray-100 flex items-center justify-center'
+                }, React.createElement('div', {
+                    className: 'text-center max-w-md mx-auto'
+                }, [
+                    React.createElement('h2', {
+                        key: 'title',
+                        className: 'text-xl font-bold text-gray-900 mb-2'
+                    }, 'Connection Error'),
+                    React.createElement('p', {
+                        key: 'message',
+                        className: 'text-gray-600 mb-4'
+                    }, `Error: ${error}`),
+                    React.createElement('button', {
+                        key: 'retry',
+                        onClick: loadData,
+                        className: 'bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700'
+                    }, 'Try Again')
+                ]));
+            }
+
+            if (!currentData) {
+                return React.createElement('div', {
+                    className: 'min-h-screen bg-gray-100 flex items-center justify-center'
+                }, React.createElement('div', {
+                    className: 'text-center'
+                }, [
+                    React.createElement('h2', {
+                        key: 'title',
+                        className: 'text-xl font-bold text-gray-900 mb-2'
+                    }, 'No Data Available'),
+                    React.createElement('p', {
+                        key: 'message',
+                        className: 'text-gray-600 mb-4'
+                    }, `No data found for ${currentEntity.name} in ${selectedMonth} ${selectedYear}`),
+                    React.createElement('button', {
+                        key: 'setup',
+                        onClick: () => setShowLogin(true),
+                        className: 'bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700'
+                    }, 'Upload Data')
+                ]));
+            }
+
+            return React.createElement('div', {
+                className: 'min-h-screen bg-gray-100 flex'
+            }, [
+                // Admin Login Modal
+                showLogin && React.createElement('div', {
+                    key: 'login-modal',
+                    className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+                }, React.createElement('div', {
+                    className: 'bg-white rounded-lg p-6 max-w-md w-full mx-4'
+                }, [
+                    React.createElement('h3', {
+                        key: 'title',
+                        className: 'text-lg font-bold mb-4'
+                    }, '🔐 Admin Sign In'),
+                    React.createElement('input', {
+                        key: 'input',
+                        type: 'password',
+                        value: password,
+                        onChange: (e) => setPassword(e.target.value),
+                        onKeyPress: (e) => e.key === 'Enter' && handleAdminLogin(),
+                        placeholder: 'Enter admin password',
+                        className: 'w-full border border-gray-300 rounded-lg px-4 py-3 mb-4'
+                    }),
+                    React.createElement('div', {
+                        key: 'buttons',
+                        className: 'flex gap-3'
+                    }, [
+                        React.createElement('button', {
+                            key: 'login',
+                            onClick: handleAdminLogin,
+                            className: 'flex-1 btn-primary text-white py-3 rounded-lg'
+                        }, 'Sign In'),
+                        React.createElement('button', {
+                            key: 'cancel',
+                            onClick: () => setShowLogin(false),
+                            className: 'flex-1 bg-gray-600 text-white py-3 rounded-lg'
+                        }, 'Cancel')
+                    ])
+                ])),
+
+                // Admin Panel Modal
+                showAdminPanel && React.createElement('div', {
+                    key: 'admin-panel',
+                    className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+                }, React.createElement('div', {
+                    className: 'bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto'
+                }, [
+                    React.createElement('div', {
+                        key: 'header',
+                        className: 'flex items-center justify-between mb-6'
+                    }, [
+                        React.createElement('h3', {
+                            key: 'title',
+                            className: 'text-xl font-bold text-gray-900'
+                        }, '⚙️ Admin Panel'),
+                        React.createElement('button', {
+                            key: 'close',
+                            onClick: () => setShowAdminPanel(false),
+                            className: 'text-gray-500 hover:text-gray-700'
+                        }, '✕')
+                    ]),
+
+                    // Template Downloads Section
+                    React.createElement('div', {
+                        key: 'templates-section',
+                        className: 'mb-8'
+                    }, [
+                        React.createElement('h4', {
+                            key: 'title',
+                            className: 'text-lg font-semibold text-gray-800 mb-4'
+                        }, '📋 Download Templates'),
+                        React.createElement('div', {
+                            key: 'template-grid',
+                            className: 'grid grid-cols-1 md:grid-cols-2 gap-4'
+                        }, entities.map(entity => React.createElement('div', {
+                            key: entity.id,
+                            className: 'border border-gray-200 rounded-lg p-4'
+                        }, [
+                            React.createElement('div', {
+                                key: 'entity-info',
+                                className: 'flex items-center gap-3 mb-3'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'icon',
+                                    className: 'w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm',
+                                    style: { backgroundColor: entity.color }
+                                }, entity.short),
+                                React.createElement('div', {
+                                    key: 'details'
+                                }, [
+                                    React.createElement('h5', {
+                                        key: 'name',
+                                        className: 'font-medium text-gray-900'
+                                    }, entity.name),
+                                    React.createElement('p', {
+                                        key: 'desc',
+                                        className: 'text-sm text-gray-500'
+                                    }, entity.description || 'Financial Entity')
+                                ])
+                            ]),
+                            React.createElement('button', {
+                                key: 'download-btn',
+                                onClick: () => downloadTemplate(entity.id),
+                                className: 'w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors'
+                            }, `Download ${entity.short} Template`)
+                        ])))
+                    ]),
+
+                    // Upload Section
+                    React.createElement('div', {
+                        key: 'upload-section',
+                        className: 'border-t pt-6'
+                    }, [
+                        React.createElement('h4', {
+                            key: 'title',
+                            className: 'text-lg font-semibold text-gray-800 mb-4'
+                        }, '📤 Upload Data'),
+                        React.createElement('div', {
+                            key: 'upload-form',
+                            className: 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'
+                        }, [
+                            React.createElement('div', {
+                                key: 'entity-select'
+                            }, [
+                                React.createElement('label', {
+                                    key: 'label',
+                                    className: 'block text-sm font-medium text-gray-700 mb-2'
+                                }, 'Company'),
+                                React.createElement('select', {
+                                    key: 'select',
+                                    value: uploadEntity,
+                                    onChange: (e) => setUploadEntity(e.target.value),
+                                    className: 'w-full border border-gray-300 rounded-lg px-3 py-2'
+                                }, entities.map(entity => React.createElement('option', {
+                                    key: entity.id,
+                                    value: entity.id
+                                }, `${entity.short} - ${entity.name}`)))
+                            ]),
+                            React.createElement('div', {
+                                key: 'month-select'
+                            }, [
+                                React.createElement('label', {
+                                    key: 'label',
+                                    className: 'block text-sm font-medium text-gray-700 mb-2'
+                                }, 'Month'),
+                                React.createElement('select', {
+                                    key: 'select',
+                                    value: uploadMonth,
+                                    onChange: (e) => setUploadMonth(e.target.value),
+                                    className: 'w-full border border-gray-300 rounded-lg px-3 py-2'
+                                }, months.map(month => React.createElement('option', {
+                                    key: month,
+                                    value: month
+                                }, month)))
+                            ]),
+                            React.createElement('div', {
+                                key: 'year-select'
+                            }, [
+                                React.createElement('label', {
+                                    key: 'label',
+                                    className: 'block text-sm font-medium text-gray-700 mb-2'
+                                }, 'Year'),
+                                React.createElement('select', {
+                                    key: 'select',
+                                    value: uploadYear,
+                                    onChange: (e) => setUploadYear(e.target.value),
+                                    className: 'w-full border border-gray-300 rounded-lg px-3 py-2'
+                                }, years.map(year => React.createElement('option', {
+                                    key: year,
+                                    value: year
+                                }, year)))
+                            ])
+                        ]),
+                        React.createElement('div', {
+                            key: 'file-upload',
+                            className: 'mb-4'
+                        }, [
+                            React.createElement('label', {
+                                key: 'label',
+                                className: 'block text-sm font-medium text-gray-700 mb-2'
+                            }, 'Excel File'),
+                            React.createElement('input', {
+                                key: 'file',
+                                type: 'file',
+                                accept: '.xlsx,.xls,.csv',
+                                onChange: (e) => setUploadFile(e.target.files[0]),
+                                className: 'w-full border border-gray-300 rounded-lg px-3 py-2'
+                            })
+                        ]),
+                        React.createElement('div', {
+                            key: 'upload-actions',
+                            className: 'flex gap-3'
+                        }, [
+                            React.createElement('button', {
+                                key: 'upload',
+                                onClick: handleAdminFileUpload,
+                                disabled: !uploadFile || uploadLoading,
+                                className: 'flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                            }, uploadLoading ? 'Uploading...' : 'Upload Data'),
+                            React.createElement('button', {
+                                key: 'cancel',
+                                onClick: () => {
+                                    setShowAdminPanel(false);
+                                    setUploadFile(null);
+                                },
+                                className: 'px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50'
+                            }, 'Close')
+                        ])
+                    ])
+                ])),
+
+                // Sidebar
+                React.createElement('div', {
+                    key: 'sidebar',
+                    className: 'w-80 bg-white shadow-lg border-r border-gray-200 flex flex-col'
+                }, [
+                    React.createElement('div', {
+                        key: 'header',
+                        className: 'p-4 border-b'
+                    }, [
+                        React.createElement('h1', {
+                            key: 'title',
+                            className: 'text-xl font-bold text-gray-900'
+                        }, 'Janashakthi'),
+                        React.createElement('p', {
+                            key: 'subtitle',
+                            className: 'text-sm text-gray-500'
+                        }, 'Financial Dashboard')
+                    ]),
+                    React.createElement('div', {
+                        key: 'period',
+                        className: 'p-4 border-b'
+                    }, [
+                        React.createElement('h3', {
+                            key: 'title',
+                            className: 'text-sm font-bold text-gray-700 mb-3'
+                        }, '📅 Period'),
+                        React.createElement('select', {
+                            key: 'month',
+                            value: selectedMonth,
+                            onChange: (e) => setSelectedMonth(e.target.value),
+                            className: 'w-full border border-gray-300 rounded px-2 py-1 mb-2 text-sm'
+                        }, months.map(month => React.createElement('option', {
+                            key: month,
+                            value: month
+                        }, month))),
+                        React.createElement('select', {
+                            key: 'year',
+                            value: selectedYear,
+                            onChange: (e) => setSelectedYear(e.target.value),
+                            className: 'w-full border border-gray-300 rounded px-2 py-1 text-sm'
+                        }, years.map(year => React.createElement('option', {
+                            key: year,
+                            value: year
+                        }, year)))
+                    ]),
+                    React.createElement('div', {
+                        key: 'entities',
+                        className: 'flex-1 p-4'
+                    }, [
+                        React.createElement('h3', {
+                            key: 'title',
+                            className: 'text-sm font-bold text-gray-700 mb-3'
+                        }, '🏢 Companies'),
+                        React.createElement('div', {
+                            key: 'list',
+                            className: 'space-y-2'
+                        }, entities.map(entity => React.createElement('button', {
+                            key: entity.id,
+                            onClick: () => setSelectedEntity(entity.id),
+                            className: `w-full text-left p-3 rounded-lg transition-all nav-item ${
+                                selectedEntity === entity.id ? 'text-white shadow-lg' : 'text-gray-700 hover:bg-gray-50'
+                            }`,
+                            style: {
+                                backgroundColor: selectedEntity === entity.id ? entity.color : undefined
+                            }
+                        }, React.createElement('div', {
+                            className: 'flex items-center gap-3'
+                        }, [
+                            React.createElement('div', {
+                                key: 'icon',
+                                className: 'w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs',
+                                style: { backgroundColor: entity.color }
+                            }, entity.short),
+                            React.createElement('p', {
+                                key: 'name',
+                                className: 'font-medium text-sm'
+                            }, entity.name)
+                        ]))))
+                    ])
+                ]),
+
+                // Main Content
+                React.createElement('div', {
+                    key: 'main',
+                    className: 'flex-1'
+                }, [
+                    React.createElement('div', {
+                        key: 'header',
+                        className: 'bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg'
+                    }, React.createElement('div', {
+                        className: 'px-6 py-6'
+                    }, React.createElement('div', {
+                        className: 'flex items-center justify-between'
+                    }, [
+                        React.createElement('div', {
+                            key: 'info',
+                            className: 'flex items-center space-x-4'
+                        }, [
+                            React.createElement('div', {
+                                key: 'logo',
+                                className: 'w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg',
+                                style: { backgroundColor: currentEntity.color }
+                            }, currentEntity.short),
+                            React.createElement('div', {
+                                key: 'details'
+                            }, [
+                                React.createElement('h1', {
+                                    key: 'name',
+                                    className: 'text-2xl font-bold text-gray-900'
+                                }, currentEntity.name),
+                                React.createElement('p', {
+                                    key: 'period',
+                                    className: 'text-sm text-gray-500'
+                                }, `${selectedMonth} ${selectedYear}`)
+                            ])
+                        ]),
+                        React.createElement('div', {
+                            key: 'actions',
+                            className: 'flex gap-3'
+                        }, [
+                            React.createElement('button', {
+                                key: 'upload',
+                                onClick: () => setShowLogin(true),
+                                className: 'btn-primary text-white px-4 py-2 rounded-lg flex items-center gap-2'
+                            }, [
+                                React.createElement('svg', {
+                                    key: 'icon',
+                                    className: 'w-4 h-4',
+                                    fill: 'none',
+                                    stroke: 'currentColor',
+                                    viewBox: '0 0 24 24'
+                                }, React.createElement('path', {
+                                    strokeLinecap: 'round',
+                                    strokeLinejoin: 'round',
+                                    strokeWidth: 2,
+                                    d: 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12'
+                                })),
+                                'Template'
+                            ])
+                        ])
+                    ]))),
+
+                    // Dashboard Content
+                    React.createElement('div', {
+                        key: 'content',
+                        className: 'p-6'
+                    }, [
+                        // KPI Cards Grid
+                        React.createElement('div', {
+                            key: 'kpi-grid',
+                            className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'
+                        }, currentData.kpis && currentData.kpis.map((kpi, index) => React.createElement('div', {
+                            key: index,
+                            className: 'kpi-card rounded-2xl p-6 relative overflow-hidden'
+                        }, [
+                            // Background Pattern
+                            React.createElement('div', {
+                                key: 'bg',
+                                className: 'absolute top-0 right-0 w-32 h-32 opacity-5'
+                            }, React.createElement('div', {
+                                className: 'w-full h-full rounded-full',
+                                style: { backgroundColor: currentEntity.color }
+                            })),
+                            
+                            // Header
+                            React.createElement('div', {
+                                key: 'header',
+                                className: 'flex items-start justify-between mb-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'title-section',
+                                    className: 'flex-1 pr-4'
+                                }, React.createElement('h3', {
+                                    className: 'text-sm font-semibold text-slate-600 leading-tight mb-1'
+                                }, kpi.name)),
+                                
+                                // Unit in top right corner
+                                kpi.unit && React.createElement('div', {
+                                    key: 'unit',
+                                    className: 'kpi-unit bg-slate-100 px-2 py-1 rounded-lg'
+                                }, kpi.unit)
+                            ]),
+                            
+                            // Main Value
+                            React.createElement('div', {
+                                key: 'main-value',
+                                className: 'mb-4'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'value',
+                                    className: 'kpi-value mb-1'
+                                }, (kpi.actual || 0).toLocaleString()),
+                                React.createElement('div', {
+                                    key: 'label',
+                                    className: 'text-xs font-medium text-slate-500 uppercase tracking-wide'
+                                }, 'Actual')
+                            ]),
+                            
+                            // Budget and Variance
+                            kpi.budget && !janashakthiLimitedNoBudgetKPIs.includes(kpi.name) && React.createElement('div', {
+                                key: 'budget-section',
+                                className: 'space-y-3'
+                            }, [
+                                // Budget Value
+                                React.createElement('div', {
+                                    key: 'budget-row',
+                                    className: 'flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg'
+                                }, [
+                                    React.createElement('span', {
+                                        key: 'budget-label',
+                                        className: 'text-xs font-medium text-slate-500 uppercase tracking-wide'
+                                    }, 'Budget'),
+                                    React.createElement('span', {
+                                        key: 'budget-value',
+                                        className: 'kpi-budget'
+                                    }, kpi.budget.toLocaleString())
+                                ]),
+                                
+                                // Variance Indicator
+                                React.createElement('div', {
+                                    key: 'variance-row',
+                                    className: 'flex items-center justify-between'
+                                }, [
+                                    React.createElement('span', {
+                                        key: 'variance-label',
+                                        className: 'text-xs font-medium text-slate-500 uppercase tracking-wide'
+                                    }, 'Variance'),
+                                    React.createElement('div', {
+                                        key: 'variance-value',
+                                        className: `flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-bold ${
+                                            (kpi.actual || 0) >= (kpi.budget || 0) 
+                                                ? 'bg-emerald-100 text-emerald-700' 
+                                                : 'bg-red-100 text-red-700'
+                                        }`
+                                    }, [
+                                        React.createElement('span', {
+                                            key: 'arrow'
+                                        }, (kpi.actual || 0) >= (kpi.budget || 0) ? '↗' : '↘'),
+                                        React.createElement('span', {
+                                            key: 'percentage'
+                                        }, `${kpi.budget ? (((kpi.actual || 0) / kpi.budget - 1) * 100).toFixed(1) : 0}%`)
+                                    ])
+                                ])
+                            ])
+                        ]))),
+
+                        // Charts Section - Financial Composition Only
+                        React.createElement('div', {
+                            key: 'charts',
+                            className: 'grid grid-cols-1 gap-6 mb-8'
+                        }, [
+                        ]),
+
+                        // Entity-Specific Charts
+                        selectedEntity === 'janashakthi-limited' && React.createElement('div', {
+                            key: 'jxg-charts',
+                            className: 'space-y-6'
+                        }, [
+                            React.createElement('div', {
+                                key: 'row1',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'share-composition',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, '🏢 Share of Profit Composition'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimplePieChart, {
+                                        data: chartData.entitySpecificData?.shareComposition || [
+                                            { name: 'Janashakthi Insurance PLC', value: 100, color: '#8B5CF6' },
+                                            { name: 'First Capital Holdings PLC', value: 100, color: '#06B6D4' },
+                                            { name: 'Janashakthi Finance PLC', value: 100, color: '#10B981' }
+                                        ]
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'overheads',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, '📈 Overheads vs Budget'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleBarChart, {
+                                        data: chartData.entitySpecificData?.overheadsData || [
+                                            { name: 'Staff Cost', actual: 100, budget: 80 },
+                                            { name: 'Admin Cost', actual: 100, budget: 100 },
+                                            { name: 'Marketing', actual: 80, budget: 100 },
+                                            { name: 'Professional Charges', actual: 60, budget: 100 }
+                                        ],
+                                        color: currentEntity.color
+                                    }))
+                                ])
+                            ]),
+                            React.createElement('div', {
+                                key: 'row2',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'maturity',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, '📊 Maturity Profile'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleBarChart, {
+                                        data: (chartData.entitySpecificData?.maturityProfile || [
+                                        { name: '0-3 Months', value: 40 },
+                                        { name: '3-6 Months', value: 60 },
+                                        { name: '6-12 Months', value: 80 },
+                                        { name: '1-2 Years', value: 55 },
+                                        { name: '3-6 Years', value: 35 }
+                                        ]).map(period => ({ name: period.name, actual: period.value })),
+                                        color: currentEntity.color,
+                                        hideLegend: true
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'wacd-awplr',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'WACD vs AWPLR'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData.entitySpecificData?.wacdData || [
+                                            { month: '24-Aug', actual: 35, budget: 20 },
+                                            { month: '24-Sep', actual: 20, budget: 15 },
+                                            { month: '24-Oct', actual: 20, budget: 15 },
+                                            { month: '24-Nov', actual: 20, budget: 15 },
+                                            { month: '24-Dec', actual: 20, budget: 15 }
+                                        ],
+                                        color: currentEntity.color
+                                    }))
+                                ])
+                            ])
+                        ]),
+
+                        // Janashakthi Insurance Charts
+                        selectedEntity === 'janashakthi-insurance' && React.createElement('div', {
+                            key: 'jins-charts',
+                            className: 'space-y-6'
+                        }, [
+                            React.createElement('div', {
+                                key: 'row1',
+                                className: 'grid grid-cols-1 lg:grid-cols-3 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'retail',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Retail Business FYP'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData?.entitySpecificData?.retailBusinessFYP || [],
+                                        color: "#8B5CF6"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'jsv',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'JSV FYP'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData?.entitySpecificData?.jsvFYP || [],
+                                        color: "#06B6D4"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'dta',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'DTA FYP'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData?.entitySpecificData?.dtaFYP || [],
+                                        color: "#10B981"
+                                    }))
+                                ])
+                            ]),
+                            React.createElement('div', {
+                                key: 'row2',
+                                className: 'grid grid-cols-1 lg:grid-cols-3 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'renewal',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Renewal Premium'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData?.entitySpecificData?.renewalPremium || [],
+                                        color: "#F59E0B"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'ul',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'UL Credit Rating Vs UL Fund Yield'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData?.entitySpecificData?.ulCreditRating || [],
+                                        color: "#EF4444"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'surplus',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Surplus Actual Vs Budget'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData?.entitySpecificData?.surplusActual || [],
+                                        color: "#8B5CF6"
+                                    }))
+                                ])
+                            ])
+                        ]),
+
+                        // First Capital Charts
+                        selectedEntity === 'first-capital' && React.createElement('div', {
+                            key: 'fch-charts',
+                            className: 'space-y-6'
+                        }, [
+                            React.createElement('div', {
+                                key: 'row1',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'net-income',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Net Income against Budget'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData.entitySpecificData?.netIncomeData || [
+                                            { month: '25-Jun', actual: 100, budget: 80 },
+                                            { month: '25-Jul', actual: 80, budget: 100 },
+                                            { month: '25-Aug', actual: 100, budget: 100 }
+                                        ],
+                                        color: "#1E3A8A"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'trading',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Net Trading Composition'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimplePieChart, {
+                                        data: chartData.entitySpecificData?.tradingComposition || [
+                                            { name: 'Primary Dealing', value: 100, color: '#8B5CF6' },
+                                            { name: 'Dealing Securities', value: 100, color: '#06B6D4' },
+                                            { name: 'Corporate Finance', value: 80, color: '#10B981' },
+                                            { name: 'Asset Management', value: 70, color: '#F59E0B' },
+                                            { name: 'Stock Brokering', value: 60, color: '#EF4444' }
+                                        ]
+                                    }))
+                                ])
+                            ]),
+                            React.createElement('div', {
+                                key: 'row2',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'overheads',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Overheads against Budget'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleBarChart, {
+                                        data: chartData.entitySpecificData?.overheadsData || [
+                                            { name: 'Staff Cost', actual: 100, budget: 80 },
+                                            { name: 'Admin Cost', actual: 100, budget: 100 },
+                                            { name: 'Marketing', actual: 80, budget: 100 },
+                                            { name: 'Professional Charges', actual: 60, budget: 100 }
+                                        ],
+                                        color: "#1E3A8A"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'unit-trust',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Unit Trust AUM'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData.entitySpecificData?.unitTrustAUM || [
+                                            { month: '25-Jun', actual: 73000, budget: 70000 },
+                                            { month: '25-Jul', actual: 73000, budget: 70000 },
+                                            { month: '25-Aug', actual: 73000, budget: 70000 }
+                                        ],
+                                        color: "#06B6D4"
+                                    }))
+                                ])
+                            ]),
+                            React.createElement('div', {
+                                key: 'row3',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'wm-aum',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'WM AUM'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: chartData.entitySpecificData?.wmAUM || [
+                                            { month: '25-Jun', actual: 73000, budget: 70000 },
+                                            { month: '25-Jul', actual: 73000, budget: 70000 },
+                                            { month: '25-Aug', actual: 73000, budget: 70000 }
+                                        ],
+                                        color: "#10B981"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'treasuries',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'First Capital Treasuries'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(MultiLineChart, {
+                                       data: chartData.entitySpecificData?.treasuriesChartData || [
+                                        { month: 'Jun-25', tBills: 26000, outrightSale: 50000, govSecurities: 80000 },
+                                        { month: 'Jul-25', tBills: 30000, outrightSale: 60000, govSecurities: 85000 },
+                                        { month: 'Aug-25', tBills: 40000, outrightSale: 7000, govSecurities: 80000 }
+                                        ],
+                                        title: 'Treasuries'
+                                    }))
+                                ])    
+                            ]),
+                            React.createElement('div', {
+                                key: 'dealing-securities',
+                                className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                            }, [
+                                React.createElement('h3', {
+                                    key: 'title',
+                                    className: 'text-lg font-bold text-gray-900 mb-4'
+                                }, 'Dealing Securities & Corporate Finance'),
+                                React.createElement('div', {
+                                    key: 'chart',
+                                    className: 'h-96'
+                                }, React.createElement(GroupedBarChart, {
+                                    data: chartData.entitySpecificData?.dealingSecuritiesData || [
+                                        {
+                                            category: 'Investment in Corporate & Gov Debts',
+                                            shortLabel: 'Corp & Gov Debt Investment',
+                                            icon: '🏛️',
+                                            jun: 5000, jul: 4500, aug: 6000
+                                        },
+                                        {
+                                            category: 'MTM Gain/Loss on Corporate & Gov. Debts',
+                                            shortLabel: 'Corp & Gov Debt MTM',
+                                            icon: '📊',
+                                            jun: -32, jul: -27, aug: 32
+                                        },
+                                        {
+                                            category: 'Investment in Listed Equity Securities FVTPL',
+                                            shortLabel: 'Listed Equity FVTPL',
+                                            icon: '📈',
+                                            jun: 5000, jul: 5000, aug: 5000 
+                                        },
+                                        {
+                                            category: 'MTM Gain/Loss on Listed Equity Securities FVTPL',
+                                            shortLabel: 'Listed Equity FVTPL MTM',
+                                            icon: '💹',
+                                            jun: 3500, jul: 3500, aug: 3500 
+                                        },
+                                        {
+                                            category: 'Investment in Listed Equity Securities FVTOCI',
+                                            shortLabel: 'Listed Equity FVTOCI',
+                                            icon: '📉',
+                                            jun: 2500, jul: 2500, aug: 2500 
+                                        },
+                                        {
+                                            category: 'MTM Gain/Loss on Listed Equity Securities FVTOCI',
+                                            shortLabel: 'Listed Equity FVTOCI MTM',
+                                            icon: '🎯',
+                                            jun: 73, jul: 73, aug: 73 
+                                        },
+                                        {
+                                            category: 'Value of Debt Mandates executed for the Month',
+                                            shortLabel: 'Monthly Debt Mandates',
+                                            icon: '📋',
+                                            jun: 10, jul: 10, aug: 10 
+                                        }
+                                    ],
+                                    title: 'Dealing Securities'
+                                }))
+                            ]),
+                            React.createElement('div', {
+                                key: 'row4',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'equities',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'FCE\'s Market Turnover'),
+                                    React.createElement('div', {
+                                        key: 'table-container',
+                                        className: 'h-64 overflow-auto'
+                                    }, React.createElement('table', {
+                                        className: 'w-full text-sm'
+                                    }, [
+                                        React.createElement('thead', {
+                                            key: 'header',
+                                            className: 'bg-gray-50 sticky top-0'
+                                        }, React.createElement('tr', {}, [
+                                            React.createElement('th', {
+                                                key: 'metric',
+                                                className: 'text-left p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, 'Metric'),
+                                            React.createElement('th', {
+                                                key: 'jun',
+                                                className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, '25-Jun'),
+                                            React.createElement('th', {
+                                                key: 'jul',
+                                                className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, '25-Jul'),
+                                            React.createElement('th', {
+                                                key: 'aug',
+                                                className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, '25-Aug')
+                                        ])),
+
+                                        React.createElement('tbody', {
+                                            key: 'body'
+                                        }, [
+                                            React.createElement('tr', {
+                                                key: 'volume',
+                                                className: 'hover:bg-gray-50 transition-colors'
+                                            }, [
+                                                React.createElement('td', {
+                                                    key: 'label',
+                                                    className: 'p-3 font-medium text-gray-900 border-b border-gray-100'
+                                                }, [
+                                                    React.createElement('div', {
+                                                        className: 'flex items-center gap-2'
+                                                    }, [
+                                                        React.createElement('div', {
+                                                            key: 'indicator',
+                                                            className: 'w-3 h-3 rounded-full',
+                                                            style: { backgroundColor: '#1E3A8A' }
+                                                        }),
+                                                        React.createElement('span', {
+                                                            key: 'text'
+                                                        }, 'Volume %')
+                                                    ])
+                                                ]),
+
+                                                React.createElement('td', {
+                                                    key: 'jun-vol',
+                                                    className: 'p-3 text-center font-semibold text-blue-600 border-b border-gray-100'
+                                                }, (currentData.fceMarketTurnover?.jun?.volume) || '4.36%'),
+                                                React.createElement('td', {
+                                                    key: 'jul-vol',
+                                                    className: 'p-3 text-center font-semibold text-blue-600 border-b border-gray-100'
+                                                }, (currentData.fceMarketTurnover?.jul?.volume) || '4.20%'),
+                                                React.createElement('td', {
+                                                    key: 'aug-vol',
+                                                    className: 'p-3 text-center font-semibold text-blue-600 border-b border-gray-100'
+                                                }, (currentData.fceMarketTurnover?.aug?.volume) || '4.30%')
+                                            ]),
+
+                                            React.createElement('tr', {
+                                                key: 'commission',
+                                                className: 'hover:bg-gray-50 transition-colors'
+                                            }, [
+                                                React.createElement('td', {
+                                                    key: 'label',
+                                                    className: 'p-3 font-medium text-gray-900 border-b border-gray-100'
+                                                }, [
+                                                    React.createElement('div', {
+                                                        className: 'flex items-center gap-2'
+                                                    }, [
+                                                        React.createElement('div', {
+                                                            key: 'indicator',
+                                                            className: 'w-3 h-3 rounded-full',
+                                                            style: { backgroundColor: '#10B981' }
+                                                        }),
+                                                        React.createElement('span', {
+                                                            key: 'text'
+                                                        }, 'Commission %')
+                                                    ])
+                                                ]),
+
+                                                React.createElement('td', {
+                                                    key: 'jun-com',
+                                                    className: 'p-3 text-center font-semibold text-green-600 border-b border-gray-100'
+                                                }, (currentData.fceMarketTurnover?.jun?.commission) || '4.0%'),
+                                                React.createElement('td', {
+                                                    key: 'jul-com',
+                                                    className: 'p-3 text-center font-semibold text-green-600 border-b border-gray-100'
+                                                }, (currentData.fceMarketTurnover?.jul?.commission) || '3.0%'),
+                                                React.createElement('td', {
+                                                    key: 'aug-com',
+                                                    className: 'p-3 text-center font-semibold text-green-600 border-b border-gray-100'
+                                                }, (currentData.fceMarketTurnover?.aug?.commission) || '2.90%')
+                                            ])
+                                        ])
+                                    ]))      
+                                ]),
+                                React.createElement('div', {
+                                    key: 'portfolio',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Portfolio Management'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: [
+                                            { month: '25-Jun', actual: 36000 },
+                                            { month: '25-Jul', actual: 38000 },
+                                            { month: '25-Aug', actual: 40000 }
+                                        ],
+                                        color: "#F59E0B"
+                                    }))
+                                ])
+                            ])
+                        ]),
+
+                        // Janashakthi Finance Charts
+                        selectedEntity === 'janashakthi-finance' && React.createElement('div', {
+                            key: 'jf-charts',
+                            className: 'space-y-6'
+                        }, [
+                            React.createElement('div', {
+                                key: 'row1',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'net-interest',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Net Interest Income against Budget'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleLineChart, {
+                                        data: [
+                                            { month: '25-Jun', actual: 100, budget: 80 },
+                                            { month: '25-Jul', actual: 80, budget: 100 },
+                                            { month: '25-Aug', actual: 100, budget: 100 }
+                                        ],
+                                        color: "#92400E"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'loan-composition',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Loan & Receivable from Customers'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimplePieChart, {
+                                        data: chartData.entitySpecificData?.loanComposition || [
+                                            { name: 'Factoring', value: 100, color: '#8B5CF6' },
+                                            { name: 'Gold Loans', value: 100, color: '#06B6D4' },
+                                            { name: 'Leasing', value: 80, color: '#10B981' },
+                                            { name: 'Loans', value: 70, color: '#F59E0B' },
+                                            { name: 'Ijara', value: 60, color: '#EF4444' }
+                                        ]
+                                    }))
+                                ])
+                            ]),
+                            React.createElement('div', {
+                                key: 'row2',
+                                className: 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+                            }, [
+                                React.createElement('div', {
+                                    key: 'overheads',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, '📊 Overheads against Budget'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64'
+                                    }, React.createElement(SimpleBarChart, {
+                                        data: [
+                                            { name: 'Staff Cost', actual: 100, budget: 80 },
+                                            { name: 'Admin Cost', actual: 100, budget: 100 },
+                                            { name: 'Marketing', actual: 80, budget: 100 },
+                                            { name: 'Professional Charges', actual: 60, budget: 100 }
+                                        ],
+                                        color: "#92400E"
+                                    }))
+                                ]),
+                                React.createElement('div', {
+                                    key: 'business-activity',
+                                    className: 'bg-white rounded-xl shadow-lg p-6 border border-gray-100'
+                                }, [
+                                    React.createElement('h3', {
+                                        key: 'title',
+                                        className: 'text-lg font-bold text-gray-900 mb-4'
+                                    }, 'Business Activity'),
+                                    React.createElement('div', {
+                                        key: 'chart',
+                                        className: 'h-64 overflow-y-auto'
+                                    }, React.createElement('div', {
+                                        className: 'space-y-3'
+                                    }, [
+                                        { month: '25-Jun', newFDs: 300, fdsWithdrawn: 200, otherLoans: 150, goldLoans: 11940 },
+                                        { month: '25-Jul', newFDs: 290, fdsWithdrawn: 250, otherLoans: 500, goldLoans: 10480 },
+                                        { month: '25-Aug', newFDs: 300, fdsWithdrawn: 280, otherLoans: 200, goldLoans: 10500 }
+                                    ].map((item, index) => React.createElement('div', {
+                                        key: index,
+                                        className: 'p-3 bg-gray-50 rounded-lg'
+                                    }, [
+                                        React.createElement('div', {
+                                            key: 'month',
+                                            className: 'text-sm font-medium text-gray-700 mb-2'
+                                        }, item.month),
+                                        React.createElement('div', {
+                                            key: 'data',
+                                            className: 'grid grid-cols-2 gap-2 text-xs'
+                                        }, [
+                                            React.createElement('div', {
+                                                key: 'newFDs'
+                                            }, `New FDs: ${item.newFDs}`),
+                                            React.createElement('div', {
+                                                key: 'withdrawn'
+                                            }, `FDs Withdrawn: ${item.fdsWithdrawn}`),
+                                            React.createElement('div', {
+                                                key: 'other'
+                                            }, `Other Loans: ${item.otherLoans}`),
+                                            React.createElement('div', {
+                                                key: 'gold'
+                                            }, `Gold Loans: ${item.goldLoans.toLocaleString()}`)
+                                        ])
+                                    ]))))
+                                ])
+                            ])
+                        ])
+                    ])
+                ])
+            ]);
+        }
+
+        // Render the Dashboard
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(Dashboard));
+    </script>
+</body>
+</html>-4',
+                                    fill: 'none',
+                                    stroke: 'currentColor',
+                                    viewBox: '0 0 24 24'
+                                }, React.createElement('path', {
+                                    strokeLinecap: 'round',
+                                    strokeLinejoin: 'round',
+                                    strokeWidth: 2,
+                                    d: 'M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                                })),
+                                'Upload'
+                            ]),
+                            React.createElement('button', {
+                                key: 'template',
+                                onClick: () => {
+                                    const link = document.createElement('a');
+                                    link.href = `/api/template/${selectedEntity}`;
+                                    link.download = `${currentEntity.short}_Template.xlsx`;
+                                    link.click();
+                                },
+                                className: 'bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2'
+                            }, [
+                                React.createElement('svg', {
+                                    key: 'icon',
+                                    className: 'w-4 h
