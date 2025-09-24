@@ -283,7 +283,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Check authentication status
-app.get('app.github.dev/api/auth/status', async (req, res) => {
+app.get('/api/auth/status', async (req, res) => {
   try {
     const userCount = await User.count();
     const hasUsers = userCount > 0;
