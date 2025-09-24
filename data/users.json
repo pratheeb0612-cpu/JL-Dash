@@ -1,0 +1,18 @@
+{
+  "pratheeb@jxg.lk": {
+    "email": "pratheeb@jxg.lk",
+    "name": "Pratheeb Rajasekaran",
+    "password": "$2b$12$LOVmEgeqGYbRWSnOrXL5fe/Jomx8sF.6kETLfvOqr77CnvYVdWtSm",
+    "role": "admin",
+    "createdAt": "2025-09-12T01:26:47.318Z",
+    "lastLogin": "2025-09-21T04:25:52.486Z"
+  },
+  "pratheeb0612@gmail.com": {
+    "email": "pratheeb0612@gmail.com",
+    "name": "pratheeb raj",
+    "password": "$2b$12$mJnOzqomWiIlIPjgD9FJseYZK07FLyvSpBa3ibBVFEcqgkOX3LXbO",
+    "role": "user",
+    "createdAt": "2025-09-13T16:46:21.642Z",
+    "lastLogin": "2025-09-14T10:16:55.839Z"
+  }
+}

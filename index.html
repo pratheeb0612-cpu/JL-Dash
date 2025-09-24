@@ -38,6 +38,22 @@
             border-color: rgba(59, 130, 246, 0.3);
         }
 
+        .auth-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .auth-input {
+            transition: all 0.2s ease;
+        }
+
+        .auth-input:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
         .kpi-value {
             font-size: 2.5rem;
             font-weight: 800;
@@ -88,18 +104,340 @@
 </head>
 <body>
     <div id="root">
-        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6;">
-            <div style="text-align: center;">
-                <div style="width: 64px; height: 64px; border: 4px solid #3b82f6; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
-                <h2 style="font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 8px;">Loading Janashakthi Dashboard</h2>
-                <p style="color: #6b7280;">Please wait while we initialize your financial dashboard...</p>
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div style="text-align: center; color: white;">
+                <div style="width: 64px; height: 64px; border: 4px solid #ffffff; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+                 <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">Loading Janashakthi Dashboard</h2>
+                <p style="opacity: 0.8;">Initializing secure authentication...</p>
             </div>
         </div>
     </div>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
+
+        // Authentication context
+        function useAuth() {
+            const [authState, setAuthState] = useState({
+                isLoading: true,
+                isAuthenticated: false,
+                user: null,
+                requiresSetup: false,
+                requiresLogin: false
+            });
+
+            const checkAuthStatus = async () => {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('/api/auth/status', {
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                    });
+                    const data = await response.json();
+                    if (data.requiresSetup) {
+                        setAuthState({ isLoading: false, requiresSetup: true, isAuthenticated: false });
+                    } else if (data.requiresLogin) {
+                        setAuthState({ isLoading: false, requiresLogin: true, isAuthenticated: false });
+                    } else if (data.authenticated) {
+                        setAuthState({ 
+                            isLoading: false, 
+                            isAuthenticated: true, 
+                            user: data.user 
+                        });
+                    }
+                } catch (error) {
+                    console.error('Auth status check failed:', error);
+                    setAuthState({ isLoading: false, requiresLogin: true, isAuthenticated: false });
+                }
+            };
+
+            const login = async (email, password) => {
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        localStorage.setItem('authToken', data.token);
+                        setAuthState({ 
+                            isLoading: false, 
+                            isAuthenticated: true, 
+                            user: data.user 
+                        });
+                        return { success: true, message: data.message };
+                    } else {
+                        return { success: false, message: data.error };
+                    }
+                } catch (error) {
+                    return { success: false, message: 'Login failed. Please try again.' };
+                }
+            };
+            const register = async (email, password, name) => {
+                try {
+                    const response = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, name })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('authToken', data.token);
+                        setAuthState({ 
+                            isLoading: false, 
+                            isAuthenticated: true, 
+                            user: data.user 
+                        });
+                        return { success: true, message: data.message };
+                    } else {
+                        return { success: false, message: data.error };
+                    }
+                } catch (error) {
+                    return { success: false, message: 'Registration failed. Please try again.' };
+                }
+            };
+            const logout = () => {
+                localStorage.removeItem('authToken');
+                setAuthState({ 
+                    isLoading: false,
+                    isAuthenticated: false, 
+                    requiresLogin: true
+                });
+            };
+            useEffect(() => {
+                checkAuthStatus();
+            }, []);
+            return { authState, login, register, logout };
+        }
         
+        // Login/Register Component
+
+        function AuthComponent({ authState, login, register }) {
+            const [isLogin, setIsLogin] = useState(!authState.requiresSetup);
+            const [formData, setFormData] = useState({ email: '', password: '', name: '' });
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                setLoading(true);
+
+                try {
+                    let result;
+                    if (isLogin) {
+                        result = await login(formData.email, formData.password);
+                    } else {
+                        if (!formData.name.trim()) {
+                            setError('Name is required');
+                            setLoading(false);
+                            return;
+                        }
+                        result = await register(formData.email, formData.password, formData.name);
+                    }
+                    if (!result.success) {
+                        setError(result.message);
+                    }
+                } catch (err) {
+                    setError('An unexpected error occurred');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            const handleInputChange = (e) => {
+                setFormData(prev => ({
+                    ...prev,
+                    [e.target.name]: e.target.value
+                }));
+            };
+            return React.createElement('div', {
+                className: 'min-h-screen flex items-center justify-center',
+                style: { 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    padding: '1rem'
+                }
+            }, [
+                React.createElement('div', {
+                    key: 'auth-card',
+                    className: 'auth-card rounded-2xl shadow-2xl p-8 w-full max-w-md'
+                }, [
+                    React.createElement('div', {
+                        key: 'header',
+                        className: 'text-center mb-8'
+                    }, [
+                        React.createElement('div', {
+                            key: 'logo',
+                            className: 'w-16 h-18 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4'
+                        }, 'Janashakthi Limited'),
+                        React.createElement('h2', {
+                            key: 'title',
+                            className: 'text-2xl font-bold text-gray-900 mb-2'
+                        }, isLogin ? 'Welcome Back' : (authState.requiresSetup ? 'Setup Admin Account' : 'Create Account')),
+                        React.createElement('p', {
+                            key: 'subtitle',
+                            className: 'text-gray-600'
+                        }, isLogin ? 'Sign in to access your dashboard' : (authState.requiresSetup ? 'Create the first admin account' : 'Join the Janashakthi team'))
+                    ]),
+
+                    error && React.createElement('div', {
+                        key: 'error',
+                        className: 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6'
+                    }, error),
+
+                    React.createElement('form', {
+                        key: 'form',
+                        onSubmit: handleSubmit,
+                        className: 'space-y-6'
+                    }, [
+                        !isLogin && React.createElement('div', {
+                            key: 'name-field'
+                        }, [
+                            React.createElement('label', {
+                                key: 'name-label',
+                                className: 'block text-sm font-medium text-gray-700 mb-2'
+                            }, 'Full Name'),
+                            React.createElement('input', {
+                                key: 'name-input',
+                                type: 'text',
+                                name: 'name',
+                                value: formData.name,
+                                onChange: handleInputChange,
+                                className: 'auth-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                                placeholder: 'Enter your full name',
+                                required: !isLogin
+                            })
+                        ]),
+
+                        React.createElement('div', {
+                            key: 'email-field'
+                        }, [
+                            React.createElement('label', {
+                                key: 'email-label',
+                                className: 'block text-sm font-medium text-gray-700 mb-2'
+                            }, 'Email Address'),
+                            React.createElement('input', {
+                                key: 'email-input',
+                                type: 'email',
+                                name: 'email',
+                                value: formData.email,
+                                onChange: handleInputChange,
+                                className: 'auth-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                                placeholder: 'Enter your email',
+                                required: true
+                            })
+                        ]),
+                        React.createElement('div', {
+                            key: 'password-field'
+                        }, [
+                            React.createElement('label', {
+                                key: 'password-label',
+                                className: 'block text-sm font-medium text-gray-700 mb-2'
+                            }, 'Password'),
+                            React.createElement('input', {
+                                key: 'password-input',
+                                type: 'password',
+                                name: 'password',
+                                value: formData.password,
+                                onChange: handleInputChange,
+                                className: 'auth-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                                placeholder: isLogin ? 'Enter your password' : 'Create a password (min 6 characters)',
+                                required: true,
+                                minLength: isLogin ? undefined : 6
+                            })
+                        ]),
+                        React.createElement('button', {
+                            key: 'submit-btn',
+                            type: 'submit',
+                            disabled: loading,
+                            className: 'btn-primary w-full text-white py-3 px-4 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
+                        }, loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account'))
+                    ]),
+                    !authState.requiresSetup && React.createElement('div', {
+                        key: 'toggle',
+                        className: 'mt-6 text-center'
+                    }, [
+                        React.createElement('p', {
+                            key: 'toggle-text',
+                            className: 'text-gray-600'
+                        }, isLogin ? "Don't have an account? " : "Already have an account? "),
+                        React.createElement('button', {
+                            key: 'toggle-btn',
+                            type: 'button',
+                            onClick: () => {
+                                setIsLogin(!isLogin);
+                                setError('');
+                                setFormData({ email: '', password: '', name: '' });
+                            },
+                            className: 'text-blue-600 hover:text-blue-800 font-semibold'
+                        }, isLogin ? 'Sign up' : 'Sign in')
+                    ])
+                ])
+            ]);
+        }
+        
+        // User Management Component (Optional)
+        function UserManagement({ user, onClose }) {
+            const [users, setUsers] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState('');
+
+            const loadUsers = async () => {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('/api/admin/users', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setUsers(data);
+                    } else {
+                        setError('Failed to load users');
+                    }
+                } catch (err) {
+                    setError('Error loading users');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            useEffect(() => {
+                loadUsers();
+            }, []);
+
+            return React.createElement('div', {
+                className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'
+            }, React.createElement('div', {
+                className: 'bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden'
+            }, [
+                React.createElement('div', {
+                    key: 'header',
+                    className: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6'
+                }, [
+                    React.createElement('div', {
+                        key: 'header-content',
+                        className: 'flex items-center justify-between'
+                    }, [
+                        React.createElement('h2', {
+                            key: 'title',
+                            className: 'text-2xl font-bold'
+                        }, 'User Management'),
+                        React.createElement('button', {
+                            key: 'close',
+                            onClick: onClose,
+                            className: 'text-white hover:text-gray-200 text-2xl font-bold'
+                        }, '×')
+                    ])
+                ]),
+                React.createElement('div', {
+                    key: 'content',
+                    className: 'p-6'
+                }, loading ? 'Loading users...' : error ? error : `${users.length} users registered`)
+            ]));
+        }
+
         console.log('Dashboard script starting...');
         
         // Enhanced interactive chart components with better visuals
@@ -129,7 +467,7 @@
                 chartInstance.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: data.map(item => item.name),
+                        labels: data.map(item => item.name || item.month),
                         datasets: [
                             {
                                 label: 'Actual',
@@ -272,7 +610,7 @@
                 chartInstance.current = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: data.map(item => item.name),
+                        labels: data.map(item => item.name || item.month),
                         datasets: [{
                             data: data.map(item => item.value || 0),
                             backgroundColor: data.map(item => item.color || '#3B82F6'),
@@ -433,7 +771,7 @@
                 chartInstance.current = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.map(item => item.month),
+                        labels: data.map(item => item.month || item.name),
                         datasets: datasets
                     },
                     options: {
@@ -615,7 +953,7 @@
                 chartInstance.current = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.map(item => item.month),
+                        labels: data.map(item => item.month || item.name),
                         datasets: datasets
                     },
                     options: {
@@ -875,7 +1213,7 @@
             });
         }
 
-        function Dashboard() {
+        function Dashboard({ user, logout }) {
             const [data, setData] = useState(null);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
@@ -893,11 +1231,67 @@
             const [uploadMonth, setUploadMonth] = useState('June');
             const [uploadYear, setUploadYear] = useState('2025');
 
+            const getBusinessActivityValue = (data, metricName, monthIndex) => {
+                console.log('🔍 Getting value for:', metricName, 'month index:', monthIndex);
+                console.log('📊 Available data:', data?.businessActivity);
+                if (!data?.businessActivity?.metrics) {
+                    console.log('❌ No business activity data found');
+                    return '0';
+                }
+                const metricKey = Object.keys(data.businessActivity.metrics).find(key =>
+                    key.toLowerCase().includes(metricName.toLowerCase())
+                );
+
+                if (!metricKey) {
+                    console.log(`❌ Metric not found: ${metricName}`);
+                    console.log('📋 Available metrics:', Object.keys(data.businessActivity.metrics));
+                    return '0';
+                }
+
+                const metric = data.businessActivity.metrics[metricKey];
+                console.log(`✅ Found metric ${metricKey}:`, metric);
+
+                let value;
+                switch(monthIndex) {
+                    case 0: value = metric.month1; break;
+                    case 1: value = metric.month2; break;
+                    case 2: value = metric.month3; break;
+                    default: value = 0;
+                }
+
+                return typeof value === 'number' ? value.toLocaleString() : '0';
+            };
+
             const entities = [
-                { id: 'janashakthi-limited', name: 'Janashakthi Limited', short: 'JXG', color: '#EA580C' },
-                { id: 'janashakthi-insurance', name: 'Janashakthi Insurance PLC', short: 'JINS', color: '#A16207' },
-                { id: 'first-capital', name: 'First Capital Holdings PLC', short: 'FCH', color: '#1E3A8A' },
-                { id: 'janashakthi-finance', name: 'Janashakthi Finance PLC', short: 'JF', color: '#92400E' }
+                {
+                    id: 'janashakthi-limited', 
+                    name: 'Janashakthi Limited', 
+                    short: 'JXG', 
+                    color: '#EA580C',
+                    logo: '/images/janashakthi-limited-logo.png.png'
+                },
+                {
+                    id: 'janashakthi-insurance', 
+                    name: 'Janashakthi Insurance PLC', 
+                    short: 'JINS', 
+                    color: '#A16207',
+                    logo: '/images/janashakthi-insurance-logo.png.jpg'
+                },
+                {
+                    id: 'first-capital', 
+                    name: 'First Capital Holdings PLC', 
+                    short: 'FCH', 
+                    color: '#1E3A8A',
+                    logo: '/images/first-capital-logo.png.jpg'
+                },
+                {
+                    id: 'janashakthi-finance', 
+                    name: 'Janashakthi Finance PLC', 
+                    short: 'JF', 
+                    color: '#92400E',
+                    logo: '/images/janashakthi-finance-logo.png.jpg'
+                }
+                
             ];
 
             const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -911,13 +1305,12 @@
                 'Staff Count'
             ];
 
-            useEffect(() => {
-                loadData();
-            }, []);
-
             const loadData = async () => {
                 try {
-                    const response = await fetch('/api/dashboard-data');
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('/api/dashboard-data', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
@@ -954,7 +1347,8 @@
             };
 
             const handleAdminFileUpload = async () => {
-                if (!uploadFile || !authToken) return;
+                const token = localStorage.getItem('authToken');
+                if (!uploadFile || !token) return;
 
                 setUploadLoading(true);
                 try {
@@ -964,9 +1358,10 @@
                     formData.append('month', uploadMonth);
                     formData.append('year', uploadYear);
 
+                    const token = localStorage.getItem('authToken');
                     const response = await fetch('/api/upload', {
                         method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}` },
+                        headers: { 'Authorization': `Bearer ${token}` },
                         body: formData
                     });
 
@@ -986,12 +1381,29 @@
                 }
             };
 
-            const downloadTemplate = (entityId) => {
-                const entity = entities.find(e => e.id === entityId);
-                const link = document.createElement('a');
-                link.href = `/api/template/${entityId}`;
-                link.download = `${entity.short}_Template_${new Date().toISOString().slice(0,10)}.xlsx`;
-                link.click();
+            const downloadTemplate = async (entityId) => {
+                try {
+                    const entity = entities.find(e => e.id === entityId);
+                    const token = localStorage.getItem('authToken');
+        
+                    const response = await fetch(`/api/template/${entityId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+        
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `${entity.short}_Template_${new Date().toISOString().slice(0,10)}.xlsx`;
+                        link.click();
+                        window.URL.revokeObjectURL(url);
+                    } else {
+                        alert('Failed to download template. Admin access required.');
+                    }
+                } catch (error) {
+                    alert('Error downloading template: ' + error.message);
+                }
             };
 
             const currentEntity = entities.find(e => e.id === selectedEntity);
@@ -999,18 +1411,29 @@
             const currentData = data && data[periodKey] && data[periodKey][selectedEntity];
 
             const chartData = useMemo(() => {
-                if (!currentData || !currentData.kpis) return null;
+                // Add safety checks for currentData and kpis
+                if (!currentData || !currentData.kpis || !Array.isArray(currentData.kpis)) {
+                    console.warn('No valid currentData or KPIs found');
+                    return null;
+                }
 
-                // Financial Composition - Key financial KPIs
-                const financialData = currentData.kpis.filter(kpi => 
-                    kpi.name.toLowerCase().includes('pat') || 
-                    kpi.name.toLowerCase().includes('assets') || 
-                    kpi.name.toLowerCase().includes('equity') || 
-                    kpi.name.toLowerCase().includes('profit') ||
-                    kpi.name.toLowerCase().includes('liabilities') ||
-                    kpi.name.toLowerCase().includes('nav')
-                ).slice(0, 4).map((kpi, index) => ({
-                    name: kpi.name,
+                // Financial Composition - Key financial KPIs with safety checks
+                const financialData = currentData.kpis.filter(kpi => {
+                    // Safety check: ensure kpi and kpi.name exist before calling toLowerCase
+                    if (!kpi || !kpi.name || typeof kpi.name !== 'string') {
+                        console.warn('Invalid KPI object:', kpi);
+                        return false;
+                    }
+        
+                    const name = kpi.name.toLowerCase();
+                    return name.includes('pat') || 
+                        name.includes('assets') || 
+                        name.includes('equity') || 
+                        name.includes('profit') ||
+                        name.includes('liabilities') ||
+                        name.includes('nav');
+                }).slice(0, 4).map((kpi, index) => ({
+                    name: kpi.name || 'Unknown KPI',
                     value: kpi.actual || 0,
                     color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'][index]
                 }));
@@ -1197,6 +1620,62 @@
                 return { financialData, entitySpecificData };
             }, [currentData, selectedEntity]);
 
+            
+             useEffect(() => {
+                loadData();
+            }, []);
+
+            useEffect(() => {
+                if (!currentData && data) {
+                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    const years = ['2023', '2024', '2025', '2026', '2027'];
+                    const currentMonthIndex = months.indexOf(selectedMonth);
+                    const currentYearIndex = years.indexOf(selectedYear);
+                        
+                    let foundPrevious = false;
+
+                    for (let i = currentMonthIndex - 1; i >= 0 && !foundPrevious; i--) {
+                        const checkKey = `${months[i]}-${selectedYear}`;
+                        if (data[checkKey] && data[checkKey][selectedEntity]) {
+                            setSelectedMonth(months[i]);
+                            foundPrevious = true;
+                            break;
+                        }
+                    }
+
+                    if (!foundPrevious) {
+                        for (let y = currentYearIndex - 1; y >= 0 && !foundPrevious; y--) {
+                            for (let i = months.length - 1; i >= 0; i--) {
+                                const checkKey = `${months[i]}-${years[y]}`;
+                                if (data[checkKey] && data[checkKey][selectedEntity]) {
+                                    setSelectedMonth(months[i]);
+                                    setSelectedYear(years[y]);
+                                    foundPrevious = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }, [selectedEntity, selectedMonth, selectedYear, data, currentData]);
+
+            if (!currentData) {
+                return React.createElement('div', {
+                    className: 'min-h-screen bg-gray-100 flex items-center justify-center'
+                }, React.createElement('div', {
+                    className: 'text-center'
+                }, [
+                    React.createElement('h2', {
+                        key: 'title',
+                        className: 'text-xl font-bold text-gray-900 mb-2'
+                    }, 'No Data Available'),
+                    React.createElement('p', {
+                        key: 'message',
+                        className: 'text-gray-600'
+                    }, `No data found for ${currentEntity.name} in ${selectedMonth} ${selectedYear}`)
+                ]));
+            }
+
             if (loading) {
                 return React.createElement('div', {
                     className: 'min-h-screen bg-gray-100 flex items-center justify-center'
@@ -1240,27 +1719,7 @@
                 ]));
             }
 
-            if (!currentData) {
-                return React.createElement('div', {
-                    className: 'min-h-screen bg-gray-100 flex items-center justify-center'
-                }, React.createElement('div', {
-                    className: 'text-center'
-                }, [
-                    React.createElement('h2', {
-                        key: 'title',
-                        className: 'text-xl font-bold text-gray-900 mb-2'
-                    }, 'No Data Available'),
-                    React.createElement('p', {
-                        key: 'message',
-                        className: 'text-gray-600 mb-4'
-                    }, `No data found for ${currentEntity.name} in ${selectedMonth} ${selectedYear}`),
-                    React.createElement('button', {
-                        key: 'setup',
-                        onClick: () => setShowLogin(true),
-                        className: 'bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700'
-                    }, 'Upload Data')
-                ]));
-            }
+           
 
             return React.createElement('div', {
                 className: 'min-h-screen bg-gray-100 flex'
@@ -1362,6 +1821,7 @@
                                     }, entity.description || 'Financial Entity')
                                 ])
                             ]),
+
                             React.createElement('button', {
                                 key: 'download-btn',
                                 onClick: () => downloadTemplate(entity.id),
@@ -1400,6 +1860,7 @@
                                     value: entity.id
                                 }, `${entity.short} - ${entity.name}`)))
                             ]),
+
                             React.createElement('div', {
                                 key: 'month-select'
                             }, [
@@ -1470,9 +1931,83 @@
                                 className: 'px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50'
                             }, 'Close')
                         ])
+                    ]),
+
+                    React.createElement('div', {
+                        key: 'export-section',
+                        className: 'border-t pt-6'
+                    }, [
+                        React.createElement('h4', {
+                            key: 'title',
+                            className: 'text-lg font-semibold text-gray-800 mb-4'
+                        }, '📊 Database Export'),
+                        React.createElement('p', {
+                            key: 'description',
+                            className: 'text-gray-600 mb-4'
+                        }, 'Download a comprehensive Excel report of all data in the database for debugging.'),
+                        React.createElement('button', {
+                            key: 'export-db',
+                            onClick: async () => {
+                                try {
+                                    const token = localStorage.getItem('authToken');
+                                    const response = await fetch('/api/export/database-report', {
+                                        headers: { 'Authorization': `Bearer ${token}` }
+                                    });
+                
+                                    if (response.ok) {
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const link = document.createElement('a');
+                                        link.href = url;
+                                        link.download = `Database_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
+                                        link.click();
+                                        window.URL.revokeObjectURL(url);
+                                    } else {
+                                        alert('Failed to download database export');
+                                    }
+                                } catch (error) {
+                                    alert('Error downloading export: ' + error.message);
+                                }
+                            },
+                            className: 'bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors'
+                        }, 'Download Database Report'),
+
+                        React.createElement('button', {
+                            key: 'cleanup-duplicates',
+                            onClick: async () => {
+                                if (confirm('This will permanently remove ALL duplicate KPIs and chart data entries. Continue?')) {
+                                    try {
+                                        const token = localStorage.getItem('authToken');
+                                        const response = await fetch('/api/admin/cleanup-duplicates', {
+                                            method: 'POST',
+                                            headers: { 
+                                                'Authorization': `Bearer ${token}`,
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                
+                                        if (response.ok) {
+                                            const result = await response.json();
+                                            alert(`Cleanup completed successfully!\nRemoved: ${result.deletedEntries} duplicates\nRemaining: ${result.remaining.kpis} KPIs, ${result.remaining.chartData} chart entries`);
+                                        } else {
+                                            const error = await response.json();
+                                            alert(`Cleanup failed: ${error.error}`);
+                                        }
+                                    } catch (error) {
+                                        alert('Cleanup failed: ' + error.message);
+                                    }
+                                }
+                            },
+                            className: 'bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors mt-4'
+                        }, 'Clean Up ALL Duplicates (KPIs + Charts)')
                     ])
+
+                    // End of admin panel sections
                 ])),
 
+                
+
+                           
                 // Sidebar
                 React.createElement('div', {
                     key: 'sidebar',
@@ -1485,12 +2020,42 @@
                         React.createElement('h1', {
                             key: 'title',
                             className: 'text-xl font-bold text-gray-900'
-                        }, 'Janashakthi'),
+                        }, 'Janashakthi Group'),
                         React.createElement('p', {
                             key: 'subtitle',
                             className: 'text-sm text-gray-500'
-                        }, 'Financial Dashboard')
+                        }, 'Financial Dashboard'),
+                        React.createElement('p', {
+                            key: 'username',
+                            className: 'text-xs text-gray-400 mt-1'
+                        }, `Welcome, ${user.name}`)
                     ]),
+                    React.createElement('div', {
+                        key: 'user-info',
+                        className: 'p-4 border-b bg-gray-50'
+                    }, [
+                        React.createElement('div', {
+                            key: 'user-details',
+                            className: 'flex items-center justify-between'
+                        }, [
+                            React.createElement('div', { key: 'info' }, [
+                                React.createElement('p', {
+                                    key: 'email',
+                                    className: 'text-sm font-medium text-gray-900'
+                                }, user.email),
+                                React.createElement('p', {
+                                    key: 'role',
+                                    className: 'text-xs text-gray-500'
+                                }, `Role: ${user.role}`)
+                            ]),
+                            React.createElement('button', {
+                                key: 'logout',
+                                onClick: logout,
+                                className: 'text-sm text-red-600 hover:text-red-800'
+                            }, 'Logout')
+                        ])
+                    ]),
+
                     React.createElement('div', {
                         key: 'period',
                         className: 'p-4 border-b'
@@ -1541,9 +2106,16 @@
                         }, React.createElement('div', {
                             className: 'flex items-center gap-3'
                         }, [
+                            entity.logo ? 
+                            React.createElement('img', {
+                                key: 'nav-logo',
+                                src: entity.logo,
+                                alt: entity.name,
+                                className: 'w-10 h-10 rounded-lg object-contain bg-white p-1 shadow-sm'
+                            }) : 
                             React.createElement('div', {
-                                key: 'icon',
-                                className: 'w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs',
+                                key: 'nav-fallback',
+                                className: 'w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs',
                                 style: { backgroundColor: entity.color }
                             }, entity.short),
                             React.createElement('p', {
@@ -1573,9 +2145,29 @@
                         }, [
                             React.createElement('div', {
                                 key: 'logo',
-                                className: 'w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg',
-                                style: { backgroundColor: currentEntity.color }
-                            }, currentEntity.short),
+                                className: 'w-20 h-20 rounded-lg object-contain'
+                            }, [
+                                currentEntity.logo && React.createElement('img', {
+                                    key: 'logo-img',
+                                    src: currentEntity.logo,
+                                    alt: currentEntity.name,
+                                    className: 'w-full h-full object-contain p-1',
+                                    onError: function(e) {
+                                        // Hide image and show fallback div
+                                        e.target.style.display = 'none';
+                                        e.target.parentNode.querySelector('.fallback-logo').style.display = 'flex';
+                                    }
+                                }),
+                                React.createElement('div', {
+                                    key: 'fallback',
+                                    className: 'fallback-logo w-full h-full flex items-center justify-center text-white font-bold text-lg',
+                                    style: { 
+                                        backgroundColor: currentEntity.color,
+                                        display: currentEntity.logo ? 'none' : 'flex'
+                                    }
+                                }, currentEntity.short)
+                            ]),
+
                             React.createElement('div', {
                                 key: 'details'
                             }, [
@@ -1589,29 +2181,15 @@
                                 }, `${selectedMonth} ${selectedYear}`)
                             ])
                         ]),
-                        React.createElement('div', {
+                        user.role === 'admin' && React.createElement('div', {
                             key: 'actions',
                             className: 'flex gap-3'
                         }, [
                             React.createElement('button', {
-                                key: 'upload',
-                                onClick: () => setShowLogin(true),
-                                className: 'btn-primary text-white px-4 py-2 rounded-lg flex items-center gap-2'
-                            }, [
-                                React.createElement('svg', {
-                                    key: 'icon',
-                                    className: 'w-4 h-4',
-                                    fill: 'none',
-                                    stroke: 'currentColor',
-                                    viewBox: '0 0 24 24'
-                                }, React.createElement('path', {
-                                    strokeLinecap: 'round',
-                                    strokeLinejoin: 'round',
-                                    strokeWidth: 2,
-                                    d: 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12'
-                                })),
-                                'Template'
-                            ])
+                                key: 'admin',
+                                onClick: () => setShowAdminPanel(true),
+                                className: 'btn-primary text-white px-4 py-2 rounded-lg'
+                            }, 'Admin Panel')
                         ])
                     ]))),
 
@@ -2171,15 +2749,15 @@
                                             React.createElement('th', {
                                                 key: 'jun',
                                                 className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
-                                            }, '25-Jun'),
+                                            }, currentData.fceMarketTurnover?.headers?.month1 || '25-Jun'),
                                             React.createElement('th', {
                                                 key: 'jul',
                                                 className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
-                                            }, '25-Jul'),
+                                            }, currentData.fceMarketTurnover?.headers?.month2 || '25-Jul'),
                                             React.createElement('th', {
                                                 key: 'aug',
-                                                className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
-                                            }, '25-Aug')
+                                                className: 'text-center p-3 font-semibly text-gray-700 border-b border-gray-200'
+                                            }, currentData.fceMarketTurnover?.headers?.month3 || '25-Aug')
                                         ])),
 
                                         React.createElement('tbody', {
@@ -2271,7 +2849,7 @@
                                         key: 'chart',
                                         className: 'h-64'
                                     }, React.createElement(SimpleLineChart, {
-                                        data: [
+                                        data: chartData.entitySpecificData?.portfolioManagement || [
                                             { month: '25-Jun', actual: 36000 },
                                             { month: '25-Jul', actual: 38000 },
                                             { month: '25-Aug', actual: 40000 }
@@ -2303,7 +2881,7 @@
                                         key: 'chart',
                                         className: 'h-64'
                                     }, React.createElement(SimpleLineChart, {
-                                        data: [
+                                        data: chartData.entitySpecificData?.netInterestIncome || [
                                             { month: '25-Jun', actual: 100, budget: 80 },
                                             { month: '25-Jul', actual: 80, budget: 100 },
                                             { month: '25-Aug', actual: 100, budget: 100 }
@@ -2349,7 +2927,7 @@
                                         key: 'chart',
                                         className: 'h-64'
                                     }, React.createElement(SimpleBarChart, {
-                                        data: [
+                                        data: chartData.entitySpecificData?.overheadsData || [
                                             { name: 'Staff Cost', actual: 100, budget: 80 },
                                             { name: 'Admin Cost', actual: 100, budget: 100 },
                                             { name: 'Marketing', actual: 80, budget: 100 },
@@ -2367,41 +2945,177 @@
                                         className: 'text-lg font-bold text-gray-900 mb-4'
                                     }, 'Business Activity'),
                                     React.createElement('div', {
-                                        key: 'chart',
-                                        className: 'h-64 overflow-y-auto'
-                                    }, React.createElement('div', {
-                                        className: 'space-y-3'
+                                        key: 'table-container',
+                                        className: 'h-64 overflow-auto'
+                                    }, React.createElement('table', {
+                                        className: 'w-full text-sm'
                                     }, [
-                                        { month: '25-Jun', newFDs: 300, fdsWithdrawn: 200, otherLoans: 150, goldLoans: 11940 },
-                                        { month: '25-Jul', newFDs: 290, fdsWithdrawn: 250, otherLoans: 500, goldLoans: 10480 },
-                                        { month: '25-Aug', newFDs: 300, fdsWithdrawn: 280, otherLoans: 200, goldLoans: 10500 }
-                                    ].map((item, index) => React.createElement('div', {
-                                        key: index,
-                                        className: 'p-3 bg-gray-50 rounded-lg'
-                                    }, [
-                                        React.createElement('div', {
-                                            key: 'month',
-                                            className: 'text-sm font-medium text-gray-700 mb-2'
-                                        }, item.month),
-                                        React.createElement('div', {
-                                            key: 'data',
-                                            className: 'grid grid-cols-2 gap-2 text-xs'
+                                        React.createElement('thead', {
+                                            key: 'header',
+                                            className: 'bg-gray-50 sticky top-0'
+                                        }, React.createElement('tr', {}, [
+                                            React.createElement('th', {
+                                                key: 'metric',
+                                                className: 'text-left p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, 'Metric'),
+                                            React.createElement('th', {
+                                                key: 'month1',
+                                                className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, currentData.businessActivity?.headers?.month1 || '25-Jun'),
+                                            React.createElement('th', {
+                                                key: 'month2', 
+                                                className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, currentData.businessActivity?.headers?.month2 || '25-Jul'),
+                                            React.createElement('th', {
+                                                key: 'month3',
+                                                className: 'text-center p-3 font-semibold text-gray-700 border-b border-gray-200'
+                                            }, currentData.businessActivity?.headers?.month3 || '25-Aug')
+                                        ])),
+
+                                        React.createElement('tbody', {
+                                            key: 'body'
                                         }, [
-                                            React.createElement('div', {
-                                                key: 'newFDs'
-                                            }, `New FDs: ${item.newFDs}`),
-                                            React.createElement('div', {
-                                                key: 'withdrawn'
-                                            }, `FDs Withdrawn: ${item.fdsWithdrawn}`),
-                                            React.createElement('div', {
-                                                key: 'other'
-                                            }, `Other Loans: ${item.otherLoans}`),
-                                            React.createElement('div', {
-                                                key: 'gold'
-                                            }, `Gold Loans: ${item.goldLoans.toLocaleString()}`)
+                                            React.createElement('tr', {
+                                                key: 'new-fds',
+                                                className: 'hover:bg-gray-50 transition-colors'
+                                            }, [
+                                                React.createElement('td', {
+                                                    key: 'label',
+                                                    className: 'p-3 font-medium text-gray-900 border-b border-gray-100'
+                                                }, [
+                                                    React.createElement('div', {
+                                                        className: 'flex items-center gap-2'
+                                                    }, [
+                                                        React.createElement('div', {
+                                                            key: 'indicator',
+                                                            className: 'w-3 h-3 rounded-full',
+                                                            style: { backgroundColor: '#92400E' }
+                                                        }),
+                                                        React.createElement('span', {
+                                                            key: 'text'
+                                                        }, 'New FDs')
+                                                    ])
+                                                ]),
+                                                React.createElement('td', {
+                                                    key: 'jun-val',
+                                                    className: 'p-3 text-center font-semibold text-amber-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'New FDs', 0)),
+                                                React.createElement('td', {
+                                                    key: 'jul-val',
+                                                    className: 'p-3 text-center font-semibold text-amber-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'New FDs', 1)),
+                                                React.createElement('td', {
+                                                    key: 'aug-val',
+                                                    className: 'p-3 text-center font-semibold text-amber-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'New FDs', 2))
+                                            ]),
+
+                                            React.createElement('tr', {
+                                                key: 'fds-withdrawn',
+                                                className: 'hover:bg-gray-50 transition-colors'
+                                            }, [
+                                                React.createElement('td', {
+                                                    key: 'label',
+                                                    className: 'p-3 font-medium text-gray-900 border-b border-gray-100'
+                                                }, [
+                                                    React.createElement('div', {
+                                                        className: 'flex items-center gap-2'
+                                                    }, [
+                                                        React.createElement('div', {
+                                                            key: 'indicator',
+                                                            className: 'w-3 h-3 rounded-full',
+                                                            style: { backgroundColor: '#DC2626' }
+                                                        }),
+                                                        React.createElement('span', {
+                                                            key: 'text'
+                                                        }, 'FDs Withdrawn')
+                                                    ])
+                                                ]),
+                                                React.createElement('td', {
+                                                    key: 'jun-val',
+                                                    className: 'p-3 text-center font-semibold text-red-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'FDs Withdrawn', 0)),
+                                                React.createElement('td', {
+                                                    key: 'jul-val',
+                                                    className: 'p-3 text-center font-semibold text-red-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'FDs Withdrawn', 1)),
+                                                React.createElement('td', {
+                                                    key: 'aug-val',
+                                                    className: 'p-3 text-center font-semibold text-red-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'FDs Withdrawn', 2))
+                                            ]),
+                                            React.createElement('tr', {
+                                                key: 'other-loans',
+                                                className: 'hover:bg-gray-50 transition-colors'
+                                            }, [
+                                                React.createElement('td', {
+                                                    key: 'label',
+                                                    className: 'p-3 font-medium text-gray-900 border-b border-gray-100'
+                                                }, [
+                                                    React.createElement('div', {
+                                                        className: 'flex items-center gap-2'
+                                                    }, [
+                                                        React.createElement('div', {
+                                                            key: 'indicator',
+                                                            className: 'w-3 h-3 rounded-full',
+                                                            style: { backgroundColor: '#059669' }
+                                                        }),
+                                                        React.createElement('span', {
+                                                            key: 'text'
+                                                        }, 'Other Loans')
+                                                    ])
+                                                ]),
+                                                React.createElement('td', {
+                                                    key: 'jun-val',
+                                                    className: 'p-3 text-center font-semibold text-green-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'Other Loans', 0)),
+                                                React.createElement('td', {
+                                                    key: 'jul-val',
+                                                    className: 'p-3 text-center font-semibold text-green-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'Other Loans', 1)),
+                                                React.createElement('td', {
+                                                    key: 'aug-val',
+                                                    className: 'p-3 text-center font-semibold text-green-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'Other Loans', 2))
+                                            ]),
+                                            React.createElement('tr', {
+                                                key: 'gold-loans',
+                                                className: 'hover:bg-gray-50 transition-colors'
+                                            }, [
+                                                React.createElement('td', {
+                                                    key: 'label',
+                                                    className: 'p-3 font-medium text-gray-900 border-b border-gray-100'
+                                                }, [
+                                                    React.createElement('div', {
+                                                        className: 'flex items-center gap-2'
+                                                    }, [
+                                                        React.createElement('div', {
+                                                            key: 'indicator',
+                                                            className: 'w-3 h-3 rounded-full',
+                                                            style: { backgroundColor: '#D97706' }
+                                                        }),
+                                                        React.createElement('span', {
+                                                            key: 'text'
+                                                        }, 'Gold Loans')
+                                                    ])
+                                                ]),
+                                                React.createElement('td', {
+                                                    key: 'jun-val',
+                                                    className: 'p-3 text-center font-semibold text-orange-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'Gold Loans', 0)),
+                                                React.createElement('td', {
+                                                    key: 'jul-val',
+                                                    className: 'p-3 text-center font-semibold text-orange-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'Gold Loans', 1)),
+                                                React.createElement('td', {
+                                                    key: 'aug-val',
+                                                    className: 'p-3 text-center font-semibold text-orange-600 border-b border-gray-100'
+                                                }, getBusinessActivityValue(currentData, 'Gold Loans', 2))
+                                            ])
                                         ])
-                                    ]))))
+                                    ]))
                                 ])
+                                
                             ])
                         ])
                     ])
@@ -2409,33 +3123,58 @@
             ]);
         }
 
-        // Render the Dashboard
+        // Main App Component
+        function App() {
+            const { authState, login, register, logout } = useAuth();
+
+            // Loading state - shows while checking if user is logged in
+            if (authState.isLoading) {
+                return React.createElement('div', {
+                    style: { 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        height: '100vh', 
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                    }
+                }, React.createElement('div', {
+                    style: { textAlign: 'center', color: 'white' }
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        style: { 
+                            width: '64px', 
+                            height: '64px', 
+                            border: '4px solid #ffffff', 
+                            borderTop: '4px solid transparent', 
+                            borderRadius: '50%', 
+                            animation: 'spin 1s linear infinite', 
+                            margin: '0 auto 16px' 
+                        }
+                    }),
+                    React.createElement('h2', {
+                        key: 'title',
+                        style: { fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }
+                    }, 'Loading Janashakthi Dashboard'),
+                    React.createElement('p', {
+                        key: 'subtitle',
+                        style: { opacity: 0.8 }
+                    }, 'Initializing secure authentication...')
+                ]));
+            }
+
+            // If user is not authenticated, show login/register form
+            if (!authState.isAuthenticated) {
+                return React.createElement(AuthComponent, { authState, login, register });
+            }
+
+            // If user is authenticated, show the dashboard
+            return React.createElement(Dashboard, { user: authState.user, logout });
+        }
+
+        // Render the App (instead of Dashboard directly)
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(Dashboard));
+        root.render(React.createElement(App));
     </script>
 </body>
-</html>-4',
-                                    fill: 'none',
-                                    stroke: 'currentColor',
-                                    viewBox: '0 0 24 24'
-                                }, React.createElement('path', {
-                                    strokeLinecap: 'round',
-                                    strokeLinejoin: 'round',
-                                    strokeWidth: 2,
-                                    d: 'M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-                                })),
-                                'Upload'
-                            ]),
-                            React.createElement('button', {
-                                key: 'template',
-                                onClick: () => {
-                                    const link = document.createElement('a');
-                                    link.href = `/api/template/${selectedEntity}`;
-                                    link.download = `${currentEntity.short}_Template.xlsx`;
-                                    link.click();
-                                },
-                                className: 'bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2'
-                            }, [
-                                React.createElement('svg', {
-                                    key: 'icon',
-                                    className: 'w-4 h
+</html>

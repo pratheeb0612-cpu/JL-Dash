@@ -1,0 +1,1140 @@
+{
+  "June-2025": {
+    "janashakthi-limited": {
+      "kpis": [
+        {
+          "name": "Profit Before Tax",
+          "actual": 1000,
+          "budget": 800,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Finance Cost",
+          "actual": 1000,
+          "budget": 800,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Share of Profit from Subsidiaries",
+          "actual": 1000,
+          "budget": 800,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Debt to Equity Ratio",
+          "actual": null,
+          "budget": null,
+          "unit": "x"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Total Assets",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Equity",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Staff Count",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        }
+      ],
+      "shareComposition": [],
+      "overheads": [
+        {
+          "name": "Staff Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Admin Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Marketing",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Professional Charges",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "wacdMovement": [
+        {
+          "month": "Jan-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Feb-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Mar-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Apr-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "May-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Jun-25",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "maturityProfile": []
+    },
+    "janashakthi-insurance": {
+      "kpis": [
+        {
+          "name": "PAT",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Gross Written Premium (GWP)",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Assets",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Investments",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "NAV",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Liabilities",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Insurance Provisions",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Acquisition Cost as % of FYP",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Cost + Claims + OH as % of GWP",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Branches",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        },
+        {
+          "name": "Staff Count",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        }
+      ],
+      "retailBusinessFYP": [
+        {
+          "month": "Jun-25",
+          "actual": 70,
+          "budget": 80
+        },
+        {
+          "month": "Jul-25",
+          "actual": 70,
+          "budget": 90
+        },
+        {
+          "month": "Aug-25",
+          "actual": 70,
+          "budget": 100
+        }
+      ],
+      "jsvFYP": [
+        {
+          "month": "Jun-25",
+          "actual": 250,
+          "budget": 450
+        },
+        {
+          "month": "Jul-25",
+          "actual": 250,
+          "budget": 490
+        },
+        {
+          "month": "Aug-25",
+          "actual": 250,
+          "budget": 390
+        }
+      ],
+      "dtaFYP": [
+        {
+          "month": "Jun-25",
+          "actual": 250,
+          "budget": 450
+        },
+        {
+          "month": "Jul-25",
+          "actual": 250,
+          "budget": 450
+        },
+        {
+          "month": "Aug-25",
+          "actual": 250,
+          "budget": 450
+        }
+      ],
+      "renewalPremium": [
+        {
+          "month": "Jun-25",
+          "actual": 1500,
+          "budget": 1400
+        },
+        {
+          "month": "Jul-25",
+          "actual": 1500,
+          "budget": 2800
+        },
+        {
+          "month": "Aug-25",
+          "actual": 1500,
+          "budget": 3401
+        }
+      ],
+      "ulCreditRating": [
+        {
+          "month": "Jun-25",
+          "actual": 10,
+          "budget": 11
+        },
+        {
+          "month": "Jul-25",
+          "actual": 10,
+          "budget": 8
+        },
+        {
+          "month": "Aug-25",
+          "actual": 10,
+          "budget": 9
+        }
+      ],
+      "surplusActual": [
+        {
+          "month": "Jul-25",
+          "actual": 103,
+          "budget": 100
+        },
+        {
+          "month": "Aug-25",
+          "actual": 103,
+          "budget": 100
+        },
+        {
+          "month": "Oct-25",
+          "actual": 103,
+          "budget": 100
+        }
+      ]
+    },
+    "first-capital": {
+      "kpis": [
+        {
+          "name": "PAT",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Assets",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Financial Assets",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Liabilities",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Securities Sold",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "NAV",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Investment Impairment",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Debt to Equity Ratio",
+          "actual": null,
+          "budget": null,
+          "unit": "x"
+        },
+        {
+          "name": "ROI",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "PBT",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "ROA Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Net Interest Income / Total Interest Income",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Operating Cost to Income",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        }
+      ],
+      "netIncomeAgainstBudget": [
+        {
+          "month": "Jun-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Jul-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Aug-25",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "tradingComposition": [],
+      "unitTrustAUM": [
+        {
+          "month": "Jun-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Jul-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Aug-25",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "wmAUM": [
+        {
+          "month": "Jun-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Jul-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Aug-25",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "portfolioManagement": [
+        {
+          "month": "Jun-25",
+          "actual": 100,
+          "budget": 80
+        },
+        {
+          "month": "Jul-25",
+          "actual": 200,
+          "budget": 90
+        },
+        {
+          "month": "Aug-25",
+          "actual": 300,
+          "budget": 100
+        }
+      ],
+      "overheadsAgainstBudget": [
+        {
+          "name": "Staff Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Admin Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Marketing",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Professional Charges",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "treasuriesData": [
+        {
+          "month": "Jun-25",
+          "tBills": 0,
+          "outrightSale": 0,
+          "govSecurities": 0
+        },
+        {
+          "month": "Jul-25",
+          "tBills": 0,
+          "outrightSale": 0,
+          "govSecurities": 0
+        },
+        {
+          "month": "Aug-25",
+          "tBills": 0,
+          "outrightSale": 0,
+          "govSecurities": 0
+        }
+      ],
+      "dealingSecurities": [
+        {
+          "category": "Investment in Corporate & Gov Debts",
+          "month1": 0,
+          "month2": 0,
+          "month3": 0,
+          "month1Label": "Jun-25",
+          "month2Label": "Jul-25",
+          "month3Label": "Aug-25"
+        },
+        {
+          "category": "MTM Gain/Loss on Corporate & Gov. Debts",
+          "month1": 0,
+          "month2": 0,
+          "month3": 0,
+          "month1Label": "Jun-25",
+          "month2Label": "Jul-25",
+          "month3Label": "Aug-25"
+        },
+        {
+          "category": "Investment in Listed Equity Securities FVTPL",
+          "month1": 0,
+          "month2": 0,
+          "month3": 0,
+          "month1Label": "Jun-25",
+          "month2Label": "Jul-25",
+          "month3Label": "Aug-25"
+        },
+        {
+          "category": "MTM Gain/Loss on Listed Equity Securities FVTPL",
+          "month1": 0,
+          "month2": 0,
+          "month3": 0,
+          "month1Label": "Jun-25",
+          "month2Label": "Jul-25",
+          "month3Label": "Aug-25"
+        },
+        {
+          "category": "Investment in Listed Equity Securities FVTOCI",
+          "month1": 0,
+          "month2": 0,
+          "month3": 0,
+          "month1Label": "Jun-25",
+          "month2Label": "Jul-25",
+          "month3Label": "Aug-25"
+        },
+        {
+          "category": "MTM Gain/Loss on Listed Equity Securities FVTOCI",
+          "month1": 0,
+          "month2": 0,
+          "month3": 0,
+          "month1Label": "Jun-25",
+          "month2Label": "Jul-25",
+          "month3Label": "Aug-25"
+        },
+        {
+          "category": "Value of Debt Mandates executed for the Month",
+          "month1": 0,
+          "month2": 0,
+          "month3": 0,
+          "month1Label": "Jun-25",
+          "month2Label": "Jul-25",
+          "month3Label": "Aug-25"
+        }
+      ],
+      "fceMarketTurnover": {
+        "jun": {
+          "volume": "10%",
+          "commission": "1000%"
+        },
+        "jul": {
+          "volume": "10%",
+          "commission": "1000%"
+        },
+        "aug": {
+          "volume": "10%",
+          "commission": "1000%"
+        }
+      }
+    },
+    "janashakthi-finance": {
+      "kpis": [
+        {
+          "name": "PAT",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Assets",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Fixed & Savings Deposits",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Liabilities",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Loans & Advances",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "NAV",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Debt to Equity Ratio",
+          "actual": null,
+          "budget": null,
+          "unit": "x"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "ROA Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Net Interest Margin",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Cost of Borrowings",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Cost to Income Ratio",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Branches",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        },
+        {
+          "name": "Staff Count",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        }
+      ],
+      "netInterestIncomeAgainstBudget": [
+        {
+          "month": "Jun-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Jul-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Aug-25",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "loanComposition": [],
+      "overheadsAgainstBudget": [
+        {
+          "name": "Staff Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Admin Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Marketing",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Professional Charges",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "businessActivity": {
+        "headers": {
+          "month1": "Aug-25",
+          "month2": "Sep-25",
+          "month3": "Oct-25"
+        },
+        "metrics": {
+          "New FDs": {
+            "month1": 100,
+            "month2": 100,
+            "month3": 100
+          },
+          "FDs Withdrawn": {
+            "month1": 80,
+            "month2": 80,
+            "month3": 80
+          },
+          "Other Loans": {
+            "month1": 70,
+            "month2": 70,
+            "month3": 70
+          },
+          "Gold Loans": {
+            "month1": 90,
+            "month2": 90,
+            "month3": 90
+          }
+        }
+      }
+    }
+  },
+  "May-2025": {
+    "janashakthi-limited": {
+      "kpis": [
+        {
+          "name": "Profit Before Tax",
+          "actual": 125,
+          "budget": 120,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Finance Cost",
+          "actual": 16,
+          "budget": 20,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Share of Profit from Subsidiaries",
+          "actual": 110,
+          "budget": 100,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Debt to Equity Ratio",
+          "actual": 1.18,
+          "budget": 1.2,
+          "unit": "x"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": 20,
+          "budget": 18,
+          "unit": "%"
+        },
+        {
+          "name": "Total Assets",
+          "actual": 5200,
+          "budget": 5200,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Equity",
+          "actual": 1650,
+          "budget": 1650,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Staff Count",
+          "actual": 252,
+          "budget": 250,
+          "unit": ""
+        }
+      ]
+    },
+    "janashakthi-insurance": {
+      "kpis": [
+        {
+          "name": "PAT",
+          "actual": 950,
+          "budget": 1000,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Gross Written Premium (GWP)",
+          "actual": 980,
+          "budget": 1000,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Assets",
+          "actual": 12800,
+          "budget": 12000,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": 16,
+          "budget": 15,
+          "unit": "%"
+        },
+        {
+          "name": "Branches",
+          "actual": 11,
+          "budget": 10,
+          "unit": ""
+        },
+        {
+          "name": "Staff Count",
+          "actual": 138,
+          "budget": 130,
+          "unit": ""
+        }
+      ]
+    }
+  },
+  "July-2025": {
+    "janashakthi-limited": {
+      "kpis": [
+        {
+          "name": "Profit Before Tax",
+          "actual": 0,
+          "budget": 140,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Finance Cost",
+          "actual": 0,
+          "budget": 22,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Share of Profit from Subsidiaries",
+          "actual": 0,
+          "budget": 110,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Debt to Equity Ratio",
+          "actual": 0,
+          "budget": 1.15,
+          "unit": "x"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": 0,
+          "budget": 20,
+          "unit": "%"
+        },
+        {
+          "name": "Total Assets",
+          "actual": 0,
+          "budget": 5800,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Equity",
+          "actual": 0,
+          "budget": 1900,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Staff Count",
+          "actual": 0,
+          "budget": 260,
+          "unit": ""
+        }
+      ]
+    }
+  },
+  "October-2025": {
+    "janashakthi-finance": {
+      "kpis": [
+        {
+          "name": "PAT",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Assets",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Fixed & Savings Deposits",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Total Liabilities",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Loans & Advances",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "NAV",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Debt to Equity Ratio",
+          "actual": null,
+          "budget": null,
+          "unit": "x"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "ROA Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Net Interest Margin",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Cost of Borrowings",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Cost to Income Ratio",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Branches",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        },
+        {
+          "name": "Staff Count",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        }
+      ],
+      "netInterestIncomeAgainstBudget": [
+        {
+          "month": "Jun-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Jul-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Aug-25",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "loanComposition": [],
+      "overheadsAgainstBudget": [
+        {
+          "name": "Staff Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Admin Cost",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Marketing",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "name": "Professional Charges",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "businessActivity": {
+        "headers": {
+          "month1": "Aug-25",
+          "month2": "Sep-25",
+          "month3": "Oct-25"
+        },
+        "metrics": {
+          "New FDs": {
+            "month1": 100,
+            "month2": 100,
+            "month3": 100
+          },
+          "FDs Withdrawn": {
+            "month1": 80,
+            "month2": 80,
+            "month3": 80
+          },
+          "Other Loans": {
+            "month1": 70,
+            "month2": 70,
+            "month3": 70
+          },
+          "Gold Loans": {
+            "month1": 90,
+            "month2": 90,
+            "month3": 90
+          }
+        }
+      }
+    },
+    "janashakthi-limited": {
+      "kpis": [
+        {
+          "name": "Profit Before Tax",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Finance Cost",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Share of Profit from Subsidiaries",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Debt to Equity Ratio",
+          "actual": null,
+          "budget": null,
+          "unit": "x"
+        },
+        {
+          "name": "ROE Annualized",
+          "actual": null,
+          "budget": null,
+          "unit": "%"
+        },
+        {
+          "name": "Total Assets",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Equity",
+          "actual": null,
+          "budget": null,
+          "unit": "LKR Mn"
+        },
+        {
+          "name": "Staff Count",
+          "actual": null,
+          "budget": null,
+          "unit": ""
+        }
+      ],
+      "shareComposition": [],
+      "overheads": [
+        {
+          "name": "Staff Cost",
+          "actual": 80,
+          "budget": 80
+        },
+        {
+          "name": "Admin Cost",
+          "actual": 80,
+          "budget": 80
+        },
+        {
+          "name": "Marketing",
+          "actual": 80,
+          "budget": 80
+        },
+        {
+          "name": "Professional Charges",
+          "actual": 80,
+          "budget": 80
+        }
+      ],
+      "wacdMovement": [
+        {
+          "month": "Jan-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Feb-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Mar-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Apr-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "May-25",
+          "actual": 0,
+          "budget": 0
+        },
+        {
+          "month": "Jun-25",
+          "actual": 0,
+          "budget": 0
+        }
+      ],
+      "maturityProfile": []
+    }
+  }
+}

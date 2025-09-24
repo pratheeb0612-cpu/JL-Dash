@@ -2,6 +2,9 @@
   "name": "janashakthi-dashboard-backend",
   "version": "1.0.0",
   "description": "Backend API for Janashakthi Financial Dashboard",
+  "overrides": {
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,10 +12,11 @@
     "test": "node test-api.js",
     "setup": "node seed-data.js",
     "setup:training": "npm install && node seed-data.js && echo 'Training environment ready! Run: npm run dev'",
-    "clean": "rm -rf uploads/* data/* sample-uploads/* templates/*",
-    "reset": "npm run clean && npm run setup",
-    "health": "curl -s http://localhost:3001/api/health",
-    "demo": "node seed-data.js && npm run dev"
+    "migrate": "node scripts/migrate-to-database.js",
+    "setup:db": "npm install && node scripts/migrate-to-database.js && npm run dev",
+    "clean": "rm -rf uploads/* templates/*",
+    "reset": "npm run clean && node seed-data.js",
+    "health": "curl -s http://localhost:3001/api/health"
   },
   "keywords": [
     "dashboard",
@@ -23,18 +27,22 @@
   "author": "Janashakthi Group",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "multer": "^1.4.5-lts.1",
-    "xlsx": "^0.18.5",
-    "cors": "^2.8.5",
-    "bcrypt": "^5.1.1",
-    "jsonwebtoken": "^9.0.2",
-    "helmet": "^7.0.0",
-    "express-rate-limit": "^6.10.0",
-    "compression": "^1.7.4",
-    "dotenv": "^16.3.1",
     "axios": "^1.6.0",
-    "form-data": "^4.0.0"
+    "bcrypt": "^5.1.1",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.11.2",
+    "form-data": "^4.0.0",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.0",
+    "node-cache": "^5.1.2",
+    "pg": "^8.16.3",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
